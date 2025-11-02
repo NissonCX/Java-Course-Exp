@@ -55,6 +55,19 @@
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
+  <component name="RunManager">
+    <configuration default="true" type="JetRunConfigurationType">
+      <module name="Java-Course-Exp-main" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
+      <module name="Java-Course-Exp-main" />
+      <option name="filePath" />
+      <method v="2" />
+    </configuration>
+  </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
@@ -81,7 +94,7 @@
       <workItem from="1762077524640" duration="3000" />
       <workItem from="1762081996811" duration="178000" />
       <workItem from="1762082177314" duration="137000" />
-      <workItem from="1762082388880" duration="712000" />
+      <workItem from="1762082388880" duration="988000" />
     </task>
     <task id="LOCAL-00001" summary="第一次作业完成（实验报告完成）">
       <option name="closed" value="true" />
@@ -115,7 +128,23 @@
       <option name="project" value="LOCAL" />
       <updated>1762082224193</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="第一次作业完成（实验报告完成）">
+      <option name="closed" value="true" />
+      <created>1762083282784</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1762083282784</updated>
+    </task>
+    <task id="LOCAL-00006" summary="第一次作业完成（实验报告完成）">
+      <option name="closed" value="true" />
+      <created>1762083342922</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1762083342922</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

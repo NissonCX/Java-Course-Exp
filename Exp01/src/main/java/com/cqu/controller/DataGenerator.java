@@ -171,21 +171,22 @@ public class DataGenerator {
      */
     public static Map<Integer, List<Integer>> assignStudentsToClazzes(List<Clazz> clazzes, List<Student> students) {
         Map<Integer, List<Integer>> clazzStudentsMap = new HashMap<>();
+        if (students.isEmpty()) return clazzStudentsMap;
 
         // 复制学生列表以便打乱顺序
         List<Student> shuffledStudents = new ArrayList<>(students);
         Collections.shuffle(shuffledStudents);
 
-        int studentIndex = 0;
         for (Clazz clazz : clazzes) {
             List<Integer> studentIds = new ArrayList<>();
-            int requiredStudents = clazz.getStudentNum();
-
-            // 为教学班分配学生
-            for (int i = 0; i < requiredStudents && studentIndex < shuffledStudents.size(); i++) {
-                studentIds.add(Integer.valueOf(shuffledStudents.get(studentIndex++).getStudentId().substring(1)));
+            int requiredStudents = Math.min(clazz.getStudentNum(), shuffledStudents.size());
+            
+            // 轮询分配学生，确保均衡
+            for (int i = 0; i < requiredStudents; i++) {
+                int studentIdx = i % shuffledStudents.size();
+                studentIds.add(Integer.valueOf(shuffledStudents.get(studentIdx).getStudentId().substring(1)));
             }
-
+            
             clazzStudentsMap.put(clazz.getClazzId(), studentIds);
         }
 

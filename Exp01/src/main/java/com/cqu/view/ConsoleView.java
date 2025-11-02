@@ -20,7 +20,7 @@ public class ConsoleView {
     
     public void start() {
         System.out.println("=====================================");
-        System.out.println("    欢迎使用学生成绩管理系统😊");
+        System.out.println("    欢迎使用学生成绩管理系统");
         System.out.println("=====================================");
         
         while (true) {
