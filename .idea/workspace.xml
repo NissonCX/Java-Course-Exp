@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1b7376d4-1472-4331-8d9d-b8f6795d0954" name="Changes" comment="第一次作业完成（实验报告完成）" />
+    <list default="true" id="1b7376d4-1472-4331-8d9d-b8f6795d0954" name="Changes" comment="修复Bug" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -19,12 +19,12 @@
     &quot;assignee&quot;: &quot;NissonCX&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings">{
-  &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/NissonCX/Java-Course-Exp&quot;,
-    &quot;accountId&quot;: &quot;fa1442a4-d761-475b-a707-b9f2a2493e7a&quot;
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "git@github.com:NissonCX/Java-Course-Exp.git",
+    "accountId": "fa1442a4-d761-475b-a707-b9f2a2493e7a"
   }
-}</component>
+}]]></component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 7
 }</component>
@@ -95,6 +95,7 @@
       <workItem from="1762081996811" duration="178000" />
       <workItem from="1762082177314" duration="137000" />
       <workItem from="1762082388880" duration="988000" />
+      <workItem from="1762084349935" duration="58000" />
     </task>
     <task id="LOCAL-00001" summary="第一次作业完成（实验报告完成）">
       <option name="closed" value="true" />
@@ -144,7 +145,15 @@
       <option name="project" value="LOCAL" />
       <updated>1762083342922</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="修复Bug">
+      <option name="closed" value="true" />
+      <created>1762084383724</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1762084383724</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -152,6 +161,7 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="第一次作业完成（实验报告完成）" />
-    <option name="LAST_COMMIT_MESSAGE" value="第一次作业完成（实验报告完成）" />
+    <MESSAGE value="修复Bug" />
+    <option name="LAST_COMMIT_MESSAGE" value="修复Bug" />
   </component>
 </project>

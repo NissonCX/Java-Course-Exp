@@ -10,6 +10,16 @@ import java.util.Map;
 import java.util.Scanner;
 
 public class ConsoleView {
+    // ANSI颜色代码
+    private static final String RESET = "\u001B[0m";
+    private static final String RED = "\u001B[31m";
+    private static final String GREEN = "\u001B[32m";
+    private static final String YELLOW = "\u001B[33m";
+    private static final String BLUE = "\u001B[34m";
+    private static final String PURPLE = "\u001B[35m";
+    private static final String CYAN = "\u001B[36m";
+    private static final String BOLD = "\u001B[1m";
+    
     private GradeManagementController service;
     private Scanner scanner;
     
@@ -19,13 +29,13 @@ public class ConsoleView {
     }
     
     public void start() {
-        System.out.println("=====================================");
-        System.out.println("    欢迎使用学生成绩管理系统");
-        System.out.println("=====================================");
+        System.out.println(BLUE + "==============================================" + RESET);
+        System.out.println(BOLD + BLUE + "         欢迎使用学生成绩管理系统" + RESET);
+        System.out.println(BLUE + "==============================================" + RESET);
         
         while (true) {
             showMainMenu();
-            int choice = getIntInput("请选择操作:");
+            int choice = getIntInput(CYAN + "请选择操作(0-6): " + RESET);
             
             switch (choice) {
                 case 1:
@@ -59,28 +69,30 @@ public class ConsoleView {
     }
     
     private void showMainMenu() {
-        System.out.println("\n========== 主菜单 ==========");
-        System.out.println("1. 初始化数据");
+        System.out.println(BOLD + BLUE + "\n============ 主菜单 ============" + RESET);
+        System.out.println(GREEN + "1. 初始化数据");
         System.out.println("2. 查看教学班成绩");
         System.out.println("3. 查询学生所有科目成绩");
         System.out.println("4. 统计成绩分布");
         System.out.println("5. 学生总成绩排名");
         System.out.println("6. 课程成绩排名");
-        System.out.println("0. 退出系统");
-        System.out.println("============================");
+        System.out.println(RED + "0. 退出系统" + RESET);
+        System.out.println(BOLD + BLUE + "==============================" + RESET);
     }
     
     private void showClazzGrades() {
         List<Clazz> clazzes = service.getAllClazzes();
         if (clazzes.isEmpty()) {
-            System.out.println("暂无教学班数据，请先初始化数据！");
+            System.out.println(RED + "⚠ 暂无教学班数据，请先初始化数据！" + RESET);
             return;
         }
         
-        System.out.println("\n========== 教学班列表 ==========");
+        System.out.println(BOLD + BLUE + "\n╔════════════════════════════════╗");
+        System.out.println("║          教学班列表         ║");
+        System.out.println("╚════════════════════════════════╝" + RESET);
         for (int i = 0; i < clazzes.size(); i++) {
             Clazz clazz = clazzes.get(i);
-            System.out.printf("%d. %s (%s) - 教师: %s\n", 
+            System.out.printf(BOLD + "%2d. " + RESET + "%s (%s) - 教师: " + YELLOW + "%s\n" + RESET,
                             i+1, clazz.getCourseName(), clazz.getSemester(), clazz.getTeacherName());
         }
         
@@ -92,10 +104,12 @@ public class ConsoleView {
         
         Clazz selectedClazz = clazzes.get(clazzChoice);
         
-        System.out.println("\n========== 排序方式 ==========");
+        System.out.println(BOLD + PURPLE + "\n╔══════════════╗");
+        System.out.println("║   排序方式   ║");
+        System.out.println("╚══════════════╝" + RESET);
         System.out.println("1. 按学号排序");
         System.out.println("2. 按成绩排序");
-        int sortChoice = getIntInput("请选择排序方式:");
+        int sortChoice = getIntInput(CYAN + "请选择排序方式(1-2): " + RESET);
         
         List<Grade> grades;
         if (sortChoice == 1) {
@@ -104,10 +118,10 @@ public class ConsoleView {
             grades = service.getGradesByClazzIdSortedByScore(selectedClazz.getClazzId());
         }
         
-        System.out.println("\n========== " + selectedClazz.getCourseName() + " 成绩单 ==========");
-        System.out.printf("%-8s %-10s %-6s %-6s %-6s %-6s %-6s\n", 
+        System.out.println(BOLD + GREEN + "\n========== " + selectedClazz.getCourseName() + " 成绩单 ==========" + RESET);
+        System.out.printf(BOLD + "%-8s %-10s %-6s %-6s %-6s %-6s %-6s\n" + RESET,
                          "学号", "姓名", "平时", "期中", "实验", "期末", "综合");
-        System.out.println("------------------------------------------------------------");
+        System.out.println(BLUE + "------------------------------------------------" + RESET);
         
         for (Grade grade : grades) {
             String studentId = "S" + String.format("%04d", grade.getStudentId());
@@ -126,10 +140,12 @@ public class ConsoleView {
     }
     
     private void showStudentGrades() {
-        System.out.println("\n========== 查询学生所有科目成绩 ==========");
+        System.out.println(BOLD + PURPLE + "\n╔════════════════════════════════╗");
+        System.out.println("║      查询学生所有科目成绩     ║");
+        System.out.println("╚════════════════════════════════╝" + RESET);
         System.out.println("1. 按学号查询");
         System.out.println("2. 按姓名查询");
-        int searchType = getIntInput("请选择查询方式:");
+        int searchType = getIntInput(CYAN + "请选择查询方式(1-2): " + RESET);
         
         List<Student> targetStudents = null;
         if (searchType == 1) {
@@ -149,12 +165,16 @@ public class ConsoleView {
         }
         
         for (Student student : targetStudents) {
-            System.out.println("\n========== " + student.getName() + " 的成绩单 ==========");
             List<Grade> studentGrades = service.getGradesByStudentId(student.getStudentId());
+            if (studentGrades.isEmpty()) {
+                System.out.println(RED + "⚠ 该学生暂无成绩记录！" + RESET);
+                continue;
+            }
             
-            System.out.printf("%-15s %-10s %-6s %-6s %-6s %-6s %-6s\n", 
+            System.out.println(BOLD + GREEN + "\n========== " + student.getName() + " 的成绩单 ==========" + RESET);
+            System.out.printf(BOLD + "%-15s %-10s %-6s %-6s %-6s %-6s %-6s\n" + RESET, 
                              "课程名", "教师", "平时", "期中", "实验", "期末", "综合");
-            System.out.println("------------------------------------------------------------------");
+            System.out.println(BLUE + "------------------------------------------------" + RESET);
             
             int totalScore = 0;
             for (Grade grade : studentGrades) {
@@ -188,14 +208,16 @@ public class ConsoleView {
     private void showScoreDistribution() {
         List<Clazz> clazzes = service.getAllClazzes();
         if (clazzes.isEmpty()) {
-            System.out.println("暂无教学班数据，请先初始化数据！");
+            System.out.println(RED + "⚠ 暂无教学班数据，请先初始化数据！" + RESET);
             return;
         }
         
-        System.out.println("\n========== 教学班列表 ==========");
+        System.out.println(BOLD + BLUE + "\n╔════════════════════════════════╗");
+        System.out.println("║          教学班列表         ║");
+        System.out.println("╚════════════════════════════════╝" + RESET);
         for (int i = 0; i < clazzes.size(); i++) {
             Clazz clazz = clazzes.get(i);
-            System.out.printf("%d. %s (%s) - 教师: %s\n", 
+            System.out.printf(BOLD + "%2d. " + RESET + "%s (%s) - 教师: " + YELLOW + "%s\n" + RESET,
                             i+1, clazz.getCourseName(), clazz.getSemester(), clazz.getTeacherName());
         }
         
@@ -208,29 +230,33 @@ public class ConsoleView {
         Clazz selectedClazz = clazzes.get(clazzChoice);
         Map<String, Long> distribution = service.getScoreDistribution(selectedClazz.getClazzId());
         
-        System.out.println("\n========== " + selectedClazz.getCourseName() + " 成绩分布 ==========");
+        System.out.println(BOLD + GREEN + "\n╔════════════════════════════════╗");
+        System.out.printf("║ %-30s ║\n", selectedClazz.getCourseName() + " 成绩分布");
+        System.out.println("╚════════════════════════════════╝" + RESET);
         distribution.forEach((range, count) -> 
-            System.out.printf("%s: %d人\n", range, count)
+            System.out.printf("%-10s: " + YELLOW + "%d人\n" + RESET, range, count)
         );
     }
     
     private void showOverallRanking() {
         List<Map.Entry<Student, Double>> ranking = service.getOverallRanking();
         if (ranking.isEmpty()) {
-            System.out.println("暂无排名数据！");
+            System.out.println(RED + "⚠ 暂无排名数据！" + RESET);
             return;
         }
         
-        System.out.println("\n========== 学生总成绩排名 ==========");
-        System.out.printf("%-6s %-8s %-10s %-6s %-8s\n", "排名", "学号", "姓名", "性别", "平均成绩");
-        System.out.println("----------------------------------------------");
+        System.out.println(BOLD + GREEN + "\n╔════════════════════════════════════════════════════════════════════════════════╗");
+        System.out.println("║                          学生总成绩排名                         ║");
+        System.out.println("╠════════════════════════════════════════════════════════════════════════════════╣" + RESET);
+        System.out.printf(BOLD + "%-8s %-10s %-12s %-8s %-10s\n" + RESET, "排名", "学号", "姓名", "性别", "平均成绩");
+        System.out.println(BLUE + "--------------------------------------------------------------------------" + RESET);
         
         for (int i = 0; i < Math.min(ranking.size(), 20); i++) { // 只显示前20名
             Map.Entry<Student, Double> entry = ranking.get(i);
             Student student = entry.getKey();
             Double avgScore = entry.getValue();
             
-            System.out.printf("%-6d %-8s %-10s %-6s %-8.2f\n",
+            System.out.printf("%-8d %-10s %-12s %-8s %-10.2f\n",
                             i+1,
                             student.getStudentId(),
                             student.getName(),
@@ -242,7 +268,7 @@ public class ConsoleView {
     private void showCourseRanking() {
         List<Clazz> clazzes = service.getAllClazzes();
         if (clazzes.isEmpty()) {
-            System.out.println("暂无课程数据，请先初始化数据！");
+            System.out.println(RED + "⚠ 暂无课程数据，请先初始化数据！" + RESET);
             return;
         }
         
@@ -252,31 +278,35 @@ public class ConsoleView {
             uniqueCourses.put(clazz.getCourseId(), clazz.getCourseName());
         }
         
-        System.out.println("\n========== 课程列表 ==========");
+        System.out.println(BOLD + BLUE + "\n╔════════════════════════════════╗");
+        System.out.println("║          课程列表         ║");
+        System.out.println("╚════════════════════════════════╝" + RESET);
         int index = 1;
         for (Map.Entry<Integer, String> entry : uniqueCourses.entrySet()) {
-            System.out.printf("%d. %s\n", index++, entry.getValue());
+            System.out.printf(BOLD + "%2d. " + RESET + "%s\n", index++, entry.getValue());
         }
         
-        int courseChoice = getIntInput("请选择课程:") - 1;
+        int courseChoice = getIntInput(CYAN + "请选择课程(1-" + uniqueCourses.size() + "): " + RESET) - 1;
         if (courseChoice < 0 || courseChoice >= uniqueCourses.size()) {
-            System.out.println("无效选择！");
+            System.out.println(RED + "⚠ 无效选择！" + RESET);
             return;
         }
         
         Integer selectedCourseId = (Integer) uniqueCourses.keySet().toArray()[courseChoice];
         List<Map.Entry<Student, Integer>> ranking = service.getRankingByCourse(selectedCourseId);
         
-        System.out.println("\n========== " + uniqueCourses.get(selectedCourseId) + " 成绩排名 ==========");
-        System.out.printf("%-6s %-8s %-10s %-6s %-6s\n", "排名", "学号", "姓名", "性别", "成绩");
-        System.out.println("------------------------------------------------");
+        System.out.println(BOLD + GREEN + "\n╔════════════════════════════════════════════════════════════════════════════════╗");
+        System.out.printf("║ %-66s ║\n", uniqueCourses.get(selectedCourseId) + " 成绩排名");
+        System.out.println("╠════════════════════════════════════════════════════════════════════════════════╣" + RESET);
+        System.out.printf(BOLD + "%-8s %-10s %-12s %-8s %-8s\n" + RESET, "排名", "学号", "姓名", "性别", "成绩");
+        System.out.println(BLUE + "--------------------------------------------------------------------------" + RESET);
         
         for (int i = 0; i < Math.min(ranking.size(), 20); i++) { // 只显示前20名
             Map.Entry<Student, Integer> entry = ranking.get(i);
             Student student = entry.getKey();
             Integer score = entry.getValue();
             
-            System.out.printf("%-6d %-8s %-10s %-6s %-6d\n",
+            System.out.printf("%-8d %-10s %-12s %-8s %-8d\n",
                             i+1,
                             student.getStudentId(),
                             student.getName(),
