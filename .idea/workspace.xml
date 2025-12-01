@@ -4,7 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1b7376d4-1472-4331-8d9d-b8f6795d0954" name="Changes" comment="修复Bug" />
+    <list default="true" id="1b7376d4-1472-4331-8d9d-b8f6795d0954" name="Changes" comment="修复Bug">
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Exp01/src/main/java/com/cqu/Application.java" beforeDir="false" afterPath="$PROJECT_DIR$/Exp01/src/main/java/com/cqu/Application.java" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -19,12 +23,16 @@
     &quot;assignee&quot;: &quot;NissonCX&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "git@github.com:NissonCX/Java-Course-Exp.git",
-    "accountId": "fa1442a4-d761-475b-a707-b9f2a2493e7a"
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;git@github.com:NissonCX/Java-Course-Exp.git&quot;,
+    &quot;accountId&quot;: &quot;fa1442a4-d761-475b-a707-b9f2a2493e7a&quot;
   }
-}]]></component>
+}</component>
+  <component name="KubernetesApiPersistence">{}</component>
+  <component name="KubernetesApiProvider">{
+  &quot;isMigrated&quot;: true
+}</component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 7
 }</component>
@@ -96,6 +104,8 @@
       <workItem from="1762082177314" duration="137000" />
       <workItem from="1762082388880" duration="988000" />
       <workItem from="1762084349935" duration="58000" />
+      <workItem from="1762427858822" duration="134000" />
+      <workItem from="1764575642959" duration="61000" />
     </task>
     <task id="LOCAL-00001" summary="第一次作业完成（实验报告完成）">
       <option name="closed" value="true" />

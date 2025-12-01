@@ -7,4 +7,6 @@ public class Application {
         ConsoleView view = new ConsoleView();
         view.start();
     }
+
+    
 }
