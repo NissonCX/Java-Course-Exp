@@ -4,11 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1b7376d4-1472-4331-8d9d-b8f6795d0954" name="Changes" comment="修复Bug">
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Exp01/src/main/java/com/cqu/Application.java" beforeDir="false" afterPath="$PROJECT_DIR$/Exp01/src/main/java/com/cqu/Application.java" afterDir="false" />
-    </list>
+    <list default="true" id="1b7376d4-1472-4331-8d9d-b8f6795d0954" name="Changes" comment="修复Bug" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -63,19 +59,6 @@
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
-  <component name="RunManager">
-    <configuration default="true" type="JetRunConfigurationType">
-      <module name="Java-Course-Exp-main" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
-      <module name="Java-Course-Exp-main" />
-      <option name="filePath" />
-      <method v="2" />
-    </configuration>
-  </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
@@ -106,6 +89,7 @@
       <workItem from="1762084349935" duration="58000" />
       <workItem from="1762427858822" duration="134000" />
       <workItem from="1764575642959" duration="61000" />
+      <workItem from="1764583979563" duration="175000" />
     </task>
     <task id="LOCAL-00001" summary="第一次作业完成（实验报告完成）">
       <option name="closed" value="true" />
