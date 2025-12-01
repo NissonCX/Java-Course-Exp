@@ -95,7 +95,7 @@ public class ConsoleUI {
     private void handleUserManagement() {
         try {
             // Check if current user has permission to manage users
-            if (!rbacService.checkPermission(currentUser.getId(), "USER", "READ")) {
+            if (!rbacService.checkPermission(currentUser.getId(), "用户", "查看")) {
                 System.out.println("您没有权限访问用户管理功能。");
                 LoggerUtil.warn("用户 " + currentUser.getUsername() + " 尝试访问无权限的功能: 用户管理");
                 return;
@@ -155,7 +155,7 @@ public class ConsoleUI {
     private void handleRoleManagement() {
         try {
             // Check if current user has permission to manage roles
-            if (!rbacService.checkPermission(currentUser.getId(), "ROLE", "READ")) {
+            if (!rbacService.checkPermission(currentUser.getId(), "角色", "查看")) {
                 System.out.println("您没有权限访问角色管理功能。");
                 LoggerUtil.warn("用户 " + currentUser.getUsername() + " 尝试访问无权限的功能: 角色管理");
                 return;
@@ -215,7 +215,7 @@ public class ConsoleUI {
     private void handlePermissionManagement() {
         try {
             // Check if current user has permission to manage permissions
-            if (!rbacService.checkPermission(currentUser.getId(), "PERMISSION", "READ")) {
+            if (!rbacService.checkPermission(currentUser.getId(), "权限", "查看")) {
                 System.out.println("您没有权限访问权限管理功能。");
                 LoggerUtil.warn("用户 " + currentUser.getUsername() + " 尝试访问无权限的功能: 权限管理");
                 return;
@@ -265,7 +265,7 @@ public class ConsoleUI {
     private void createUser() {
         try {
             // Check permission
-            if (!rbacService.checkPermission(currentUser.getId(), "USER", "CREATE")) {
+            if (!rbacService.checkPermission(currentUser.getId(), "用户", "创建")) {
                 System.out.println("您没有权限创建用户。");
                 LoggerUtil.warn("用户 " + currentUser.getUsername() + " 尝试创建用户但没有权限");
                 return;
@@ -308,7 +308,7 @@ public class ConsoleUI {
     private void updateUser() {
         try {
             // Check permission
-            if (!rbacService.checkPermission(currentUser.getId(), "USER", "UPDATE")) {
+            if (!rbacService.checkPermission(currentUser.getId(), "用户", "更新")) {
                 System.out.println("您没有权限更新用户。");
                 LoggerUtil.warn("用户 " + currentUser.getUsername() + " 尝试更新用户但没有权限");
                 return;
@@ -353,7 +353,7 @@ public class ConsoleUI {
     private void deleteUser() {
         try {
             // Check permission
-            if (!rbacService.checkPermission(currentUser.getId(), "USER", "DELETE")) {
+            if (!rbacService.checkPermission(currentUser.getId(), "用户", "删除")) {
                 System.out.println("您没有权限删除用户。");
                 LoggerUtil.warn("用户 " + currentUser.getUsername() + " 尝试删除用户但没有权限");
                 return;
@@ -385,7 +385,7 @@ public class ConsoleUI {
     private void createRole() {
         try {
             // Check permission
-            if (!rbacService.checkPermission(currentUser.getId(), "ROLE", "CREATE")) {
+            if (!rbacService.checkPermission(currentUser.getId(), "角色", "创建")) {
                 System.out.println("您没有权限创建角色。");
                 LoggerUtil.warn("用户 " + currentUser.getUsername() + " 尝试创建角色但没有权限");
                 return;
@@ -425,7 +425,7 @@ public class ConsoleUI {
     private void updateRole() {
         try {
             // Check permission
-            if (!rbacService.checkPermission(currentUser.getId(), "ROLE", "UPDATE")) {
+            if (!rbacService.checkPermission(currentUser.getId(), "角色", "更新")) {
                 System.out.println("您没有权限更新角色。");
                 LoggerUtil.warn("用户 " + currentUser.getUsername() + " 尝试更新角色但没有权限");
                 return;
@@ -470,7 +470,7 @@ public class ConsoleUI {
     private void deleteRole() {
         try {
             // Check permission
-            if (!rbacService.checkPermission(currentUser.getId(), "ROLE", "DELETE")) {
+            if (!rbacService.checkPermission(currentUser.getId(), "角色", "删除")) {
                 System.out.println("您没有权限删除角色。");
                 LoggerUtil.warn("用户 " + currentUser.getUsername() + " 尝试删除角色但没有权限");
                 return;
@@ -496,7 +496,7 @@ public class ConsoleUI {
     private void createPermission() {
         try {
             // Check permission
-            if (!rbacService.checkPermission(currentUser.getId(), "PERMISSION", "CREATE")) {
+            if (!rbacService.checkPermission(currentUser.getId(), "权限", "创建")) {
                 System.out.println("您没有权限创建权限。");
                 LoggerUtil.warn("用户 " + currentUser.getUsername() + " 尝试创建权限但没有权限");
                 return;
@@ -543,7 +543,7 @@ public class ConsoleUI {
     private void updatePermission() {
         try {
             // Check permission
-            if (!rbacService.checkPermission(currentUser.getId(), "PERMISSION", "UPDATE")) {
+            if (!rbacService.checkPermission(currentUser.getId(), "权限", "更新")) {
                 System.out.println("您没有权限更新权限。");
                 LoggerUtil.warn("用户 " + currentUser.getUsername() + " 尝试更新权限但没有权限");
                 return;
@@ -600,7 +600,7 @@ public class ConsoleUI {
     private void deletePermission() {
         try {
             // Check permission
-            if (!rbacService.checkPermission(currentUser.getId(), "PERMISSION", "DELETE")) {
+            if (!rbacService.checkPermission(currentUser.getId(), "权限", "删除")) {
                 System.out.println("您没有权限删除权限。");
                 LoggerUtil.warn("用户 " + currentUser.getUsername() + " 尝试删除权限但没有权限");
                 return;
@@ -697,7 +697,7 @@ public class ConsoleUI {
             
             // Check if current user has permission to view other users' permissions
             if (!currentUser.getId().equals(userId)) {
-                if (!rbacService.checkPermission(currentUser.getId(), "USER", "READ")) {
+                if (!rbacService.checkPermission(currentUser.getId(), "用户", "查看")) {
                     System.out.println("您没有权限查看其他用户的权限信息。");
                     LoggerUtil.warn("用户 " + currentUser.getUsername() + " 尝试查看用户 " + userId + " 的权限信息");
                     return;
@@ -736,7 +736,7 @@ public class ConsoleUI {
     private void assignRoleToUser() {
         try {
             // Check permission
-            if (!rbacService.checkPermission(currentUser.getId(), "ROLE", "ASSIGN")) {
+            if (!rbacService.checkPermission(currentUser.getId(), "角色", "分配")) {
                 System.out.println("您没有权限为用户分配角色。");
                 LoggerUtil.warn("用户 " + currentUser.getUsername() + " 尝试为用户分配角色但没有权限");
                 return;
@@ -768,7 +768,7 @@ public class ConsoleUI {
     private void removeRoleFromUser() {
         try {
             // Check permission
-            if (!rbacService.checkPermission(currentUser.getId(), "ROLE", "ASSIGN")) {
+            if (!rbacService.checkPermission(currentUser.getId(), "角色", "分配")) {
                 System.out.println("您没有权限从用户移除角色。");
                 LoggerUtil.warn("用户 " + currentUser.getUsername() + " 尝试从用户移除角色但没有权限");
                 return;
@@ -800,7 +800,7 @@ public class ConsoleUI {
     private void grantPermissionToRole() {
         try {
             // Check permission
-            if (!rbacService.checkPermission(currentUser.getId(), "PERMISSION", "GRANT")) {
+            if (!rbacService.checkPermission(currentUser.getId(), "权限", "授予")) {
                 System.out.println("您没有权限授予角色权限。");
                 LoggerUtil.warn("用户 " + currentUser.getUsername() + " 尝试授予角色权限但没有权限");
                 return;
@@ -832,7 +832,7 @@ public class ConsoleUI {
     private void revokePermissionFromRole() {
         try {
             // Check permission
-            if (!rbacService.checkPermission(currentUser.getId(), "PERMISSION", "GRANT")) {
+            if (!rbacService.checkPermission(currentUser.getId(), "权限", "授予")) {
                 System.out.println("您没有权限从角色撤销权限。");
                 LoggerUtil.warn("用户 " + currentUser.getUsername() + " 尝试从角色撤销权限但没有权限");
                 return;
@@ -873,7 +873,7 @@ public class ConsoleUI {
             }
             
             // Check permission
-            if (!rbacService.checkPermission(currentUser.getId(), "ROLE", "READ")) {
+            if (!rbacService.checkPermission(currentUser.getId(), "角色", "查看")) {
                 System.out.println("您没有权限查看角色权限。");
                 LoggerUtil.warn("用户 " + currentUser.getUsername() + " 尝试查看角色权限但没有权限");
                 return;

@@ -1,3 +1,5 @@
+
+
 package com.cqu.exp02.service;
 
 import com.cqu.exp02.dao.*;
@@ -250,7 +252,7 @@ public class RbacService {
     
     public List<String> getUserPermissions(Long userId) throws SQLException {
         List<String> permissions = new ArrayList<>();
-        String sql = "SELECT DISTINCT p.name FROM users u " +
+        String sql = "SELECT DISTINCT p.resource, p.action FROM users u " +
                      "JOIN user_roles ur ON u.id = ur.user_id " +
                      "JOIN role_permissions rp ON ur.role_id = rp.role_id " +
                      "JOIN permissions p ON rp.permission_id = p.id " +
@@ -263,7 +265,7 @@ public class RbacService {
             
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    permissions.add(rs.getString("name"));
+                    permissions.add(rs.getString("resource") + ":" + rs.getString("action"));
                 }
             }
         }
