@@ -31,7 +31,7 @@ public class DatabaseConfig {
             ex.printStackTrace();
         }
     }
-    
+
     public String getProperty(String key) {
         return properties.getProperty(key);
     }
