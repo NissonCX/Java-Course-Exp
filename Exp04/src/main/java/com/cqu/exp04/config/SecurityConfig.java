@@ -33,6 +33,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()  // 登录和注册接口无需认证
                         .requestMatchers("/api/course/**").permitAll()  // 课程查询接口无需认证
+                        // 放行静态资源
+                        .requestMatchers("/", "/index.html", "/student.html", "/teacher.html", "/css/**", "/js/**", "/favicon.ico", "/error").permitAll()
                         .requestMatchers("/api/student/**").hasRole("STUDENT")
                         .requestMatchers("/api/teacher/**").hasRole("TEACHER")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")

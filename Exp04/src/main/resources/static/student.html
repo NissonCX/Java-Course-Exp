@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学生端 - 学生成绩管理系统</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container navbar-content">
+            <a href="#" class="logo">🎓 成绩管理系统</a>
+            <div class="user-menu">
+                <div class="user-info">
+                    <div class="user-name" id="userName">Student Name</div>
+                    <div class="user-role">学生</div>
+                </div>
+                <button class="btn btn-outline" id="logoutBtn">退出</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <div class="sidebar-nav">
+                <a href="#" class="nav-item active" data-view="scores">
+                    📊 我的成绩
+                </a>
+                <a href="#" class="nav-item" data-view="enrollments">
+                    📚 选课中心
+                </a>
+                <a href="#" class="nav-item" data-view="ai-advisor">
+                    🤖 AI 学业顾问
+                </a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <!-- Loading Indicator -->
+            <div id="loading" style="display: none; text-align: center; padding: 2rem;">
+                <div class="spinner" style="margin: 0 auto;"></div>
+                <p style="margin-top: 1rem; color: var(--text-secondary);">加载中...</p>
+            </div>
+
+            <!-- View: My Scores -->
+            <div id="view-scores" class="view-section">
+                <h2 style="margin-bottom: var(--spacing-lg);">我的成绩概览</h2>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-title">平均分</div>
+                        <div class="stat-value" id="avgScore">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">平均绩点</div>
+                        <div class="stat-value" id="avgGPA">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">修读学分</div>
+                        <div class="stat-value" id="totalCredits">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">课程总数</div>
+                        <div class="stat-value" id="totalCourses">-</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 style="margin-bottom: var(--spacing-md);">成绩明细</h3>
+                    <div class="table-container">
+                        <table id="scoresTable">
+                            <thead>
+                                <tr>
+                                    <th>课程名称</th>
+                                    <th>学分</th>
+                                    <th>学期</th>
+                                    <th>平时(20%)</th>
+                                    <th>期中(20%)</th>
+                                    <th>实验(20%)</th>
+                                    <th>期末(40%)</th>
+                                    <th>总评</th>
+                                    <th>绩点</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View: Enrollments -->
+            <div id="view-enrollments" class="view-section" style="display: none;">
+                <h2 style="margin-bottom: var(--spacing-lg);">我的选课</h2>
+                <div class="card">
+                    <p style="color: var(--text-secondary); margin-bottom: var(--spacing-md);">
+                        已选课程列表。如需退课，请点击相应按钮。
+                    </p>
+                    <div class="table-container">
+                        <table id="enrollmentsTable">
+                            <thead>
+                                <tr>
+                                    <th>教学班号</th>
+                                    <th>课程名称</th>
+                                    <th>授课教师</th>
+                                    <th>学期</th>
+                                    <th>状态</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View: AI Advisor -->
+            <div id="view-ai-advisor" class="view-section" style="display: none;">
+                <h2 style="margin-bottom: var(--spacing-lg);">AI 学业顾问</h2>
+                <div class="card">
+                    <div class="chat-container">
+                        <div class="chat-messages" id="chatMessages">
+                            <div class="message ai">
+                                你好！我是你的AI学业顾问。我可以根据你的成绩情况，为你提供学习建议、分析薄弱环节。有什么我可以帮你的吗？
+                            </div>
+                        </div>
+                        <div class="chat-input-area">
+                            <input type="text" class="chat-input" id="chatInput" placeholder="输入你的问题，例如：如何提高我的Java成绩？">
+                            <button class="btn btn-primary" id="sendMessageBtn">发送</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/utils.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/student.js"></script>
+</body>
+</html>
