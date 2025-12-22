@@ -1,0 +1,23 @@
+package com.cqu.exp04.entity;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
+
+/**
+ * 成绩权重配置实体类
+ */
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class ScoreWeight extends BaseEntity {
+    private Long courseId;
+    private BigDecimal usualWeight;
+    private BigDecimal midtermWeight;
+    private BigDecimal experimentWeight;
+    private BigDecimal finalWeight;
+}
