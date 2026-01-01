@@ -4,11 +4,12 @@
 .chat-container {
     display: flex;
     flex-direction: column;
-    height: 500px;
-    background-color: var(--surface-color);
+    height: 600px; /* 增加高度 */
+    background-color: #f8fafc; /* 浅灰背景 */
     border: 1px solid var(--border-color);
     border-radius: var(--radius-lg);
     overflow: hidden;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 .chat-messages {
@@ -17,17 +18,146 @@
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-md);
+    gap: 1.5rem; /* 增加消息间距 */
 }
 
 .message {
-    max-width: 80%;
-    padding: var(--spacing-md);
-    border-radius: var(--radius-lg);
-    line-height: 1.6;
+    max-width: 85%;
+    padding: 1rem 1.25rem;
+    border-radius: 1rem;
+    line-height: 1.75;
     font-size: 0.95rem;
+    word-wrap: break-word;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    position: relative;
 }
 
+/* 段落样式 */
+.message p {
+    margin: 0.75em 0;
+}
+
+.message p:first-child {
+    margin-top: 0;
+}
+
+.message p:last-child {
+    margin-bottom: 0;
+}
+
+/* 列表样式 */
+.message ul, .message ol {
+    margin: 0.75em 0;
+    padding-left: 1.5em;
+}
+
+.message ul {
+    list-style-type: disc;
+}
+
+.message ol {
+    list-style-type: decimal;
+}
+
+.message li {
+    margin: 0.25em 0;
+    padding-left: 0.25em;
+}
+
+.message li::marker {
+    color: #64748b;
+}
+
+/* 标题样式 */
+.message h1, .message h2, .message h3, .message h4 {
+    font-weight: 600;
+    color: #1e293b;
+    margin-top: 1.5em;
+    margin-bottom: 0.75em;
+    line-height: 1.3;
+}
+
+.message h1:first-child, 
+.message h2:first-child, 
+.message h3:first-child,
+.message h4:first-child {
+    margin-top: 0;
+}
+
+.message h1 { font-size: 1.4em; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.3em; }
+.message h2 { font-size: 1.25em; }
+.message h3 { font-size: 1.1em; color: #334155; }
+.message h4 { font-size: 1em; font-weight: 700; }
+
+/* 强调样式 */
+.message strong {
+    font-weight: 700;
+    color: #0f172a;
+}
+
+/* 代码样式 */
+.message code {
+    background-color: rgba(0, 0, 0, 0.06);
+    color: #0f172a;
+    padding: 0.2em 0.4em;
+    border-radius: 4px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.9em;
+}
+
+.message pre {
+    background-color: #1e293b;
+    color: #f8fafc;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    overflow-x: auto;
+    margin: 1em 0;
+}
+
+.message pre code {
+    background-color: transparent;
+    color: inherit;
+    padding: 0;
+    font-size: 0.85em;
+}
+
+/* 引用样式 */
+.message blockquote {
+    border-left: 4px solid #cbd5e1;
+    margin: 1em 0;
+    padding-left: 1em;
+    color: #475569;
+    font-style: italic;
+}
+
+/* 表格样式 */
+.message table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1em 0;
+    font-size: 0.9em;
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+}
+
+.message th, .message td {
+    border: 1px solid #e2e8f0;
+    padding: 0.75em;
+    text-align: left;
+}
+
+.message th {
+    background-color: #f1f5f9;
+    font-weight: 600;
+    color: #334155;
+}
+
+.message tr:nth-child(even) {
+    background-color: #f8fafc;
+}
+
+/* 消息气泡颜色 */
 .message.user {
     align-self: flex-end;
     background-color: var(--primary-color);
@@ -35,29 +165,41 @@
     border-bottom-right-radius: 4px;
 }
 
+.message.user p, .message.user li, .message.user h1, .message.user h2, .message.user h3, .message.user strong {
+    color: white; /* 强制用户消息内文字为白色 */
+}
+
 .message.ai {
     align-self: flex-start;
-    background-color: #f1f5f9;
-    color: var(--text-primary);
+    background-color: #ffffff; /* 纯白背景 */
+    color: #334155;
     border-bottom-left-radius: 4px;
+    border: 1px solid #e2e8f0; /* 细边框 */
 }
 
 .chat-input-area {
-    padding: var(--spacing-md);
+    padding: 1rem;
     border-top: 1px solid var(--border-color);
     display: flex;
-    gap: var(--spacing-sm);
+    gap: 0.75rem;
     background-color: white;
 }
 
 .chat-input {
     flex: 1;
     resize: none;
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
-    padding: var(--spacing-sm);
+    border: 1px solid #cbd5e1;
+    border-radius: 0.5rem;
+    padding: 0.75rem;
     font-family: inherit;
     height: 50px;
+    transition: border-color 0.2s;
+}
+
+.chat-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 /* Stats Cards Grid */

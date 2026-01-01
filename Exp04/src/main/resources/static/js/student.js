@@ -60,9 +60,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderStats(data) {
-        document.getElementById('avgScore').textContent = data.averageScore?.toFixed(1) || '-';
-        document.getElementById('avgGPA').textContent = data.averageGPA?.toFixed(2) || '-';
-        document.getElementById('totalCredits').textContent = data.totalCredits || '0';
+        document.getElementById('avgScore').textContent = data.averageScore?.toFixed(1) || '0.0';
+        document.getElementById('avgGPA').textContent = data.gpa?.toFixed(2) || '0.00';
+        document.getElementById('totalCredits').textContent = data.completedCourses || '0';
         document.getElementById('totalCourses').textContent = data.totalCourses || '0';
     }
 
@@ -78,9 +78,9 @@ document.addEventListener('DOMContentLoaded', () => {
         scores.forEach(s => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td>${s.courseName}</td>
-                <td>${s.credit}</td>
-                <td>${s.term}</td>
+                <td>${s.courseName || '-'}</td>
+                <td>${s.credit || '-'}</td>
+                <td>${s.semester || '-'}</td>
                 <td>${Utils.formatScore(s.usualScore)}</td>
                 <td>${Utils.formatScore(s.midtermScore)}</td>
                 <td>${Utils.formatScore(s.experimentScore)}</td>
@@ -122,12 +122,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td>${item.classNo || '-'}</td>
-                <td>${item.courseName}</td>
-                <td>${item.teacherName}</td>
-                <td>${item.term}</td>
+                <td>${item.courseName || '-'}</td>
+                <td>${item.teacherName || '-'}</td>
+                <td>${item.semester || '-'}</td>
                 <td><span class="score-badge score-mid">已选</span></td>
                 <td>
-                    <button class="btn btn-danger btn-sm" onclick="handleDropCourse(${item.id})">退课</button>
+                    <button class="btn btn-danger btn-sm" onclick="handleDropCourse(${item.enrollmentId})">退课</button>
                 </td>
             `;
             tbody.appendChild(tr);
@@ -156,12 +156,37 @@ document.addEventListener('DOMContentLoaded', () => {
     const sendBtn = document.getElementById('sendMessageBtn');
     const chatMessages = document.getElementById('chatMessages');
 
+    let currentEventSource = null; // Track current SSE connection
+
     function addMessage(text, type) {
         const div = document.createElement('div');
         div.className = `message ${type}`;
-        div.textContent = text;
+        div.innerHTML = formatAIMessage(text);
         chatMessages.appendChild(div);
         chatMessages.scrollTop = chatMessages.scrollHeight;
+        return div;
+    }
+
+    // 格式化AI消息，使用marked库处理Markdown
+    function formatAIMessage(text) {
+        if (!text) return '';
+        try {
+            // 预处理：修复常见的格式问题以优化 Markdown 解析
+            let processed = text
+                // 1. 确保标题标记前有换行，且 # 后有空格
+                .replace(/([^\n])\s*(#{1,6})([^\s#])/g, '$1\n\n$2 $3')
+                .replace(/([^\n])\s*(#{1,6})\s+/g, '$1\n\n$2 ')
+                // 2. 确保列表项前有换行
+                .replace(/([^\n])\s*(\-\s)/g, '$1\n\n$2')
+                // 3. 确保数字列表项前有换行 (1. xxx)
+                .replace(/([^\n])\s*(\d+\.\s)/g, '$1\n\n$2');
+
+            // 启用换行符转 <br>，确保单换行也能显示
+            return marked.parse(processed, { breaks: true });
+        } catch (e) {
+            console.error('Markdown parsing error:', e);
+            return text;
+        }
     }
 
     async function handleSendMessage() {
@@ -171,27 +196,113 @@ document.addEventListener('DOMContentLoaded', () => {
         addMessage(text, 'user');
         chatInput.value = '';
 
-        // Add loading placeholder
-        const loadingId = 'loading-' + Date.now();
-        const loadingDiv = document.createElement('div');
-        loadingDiv.className = 'message ai';
-        loadingDiv.id = loadingId;
-        loadingDiv.textContent = '思考中...';
-        chatMessages.appendChild(loadingDiv);
+        // Close existing connection if any
+        if (currentEventSource) {
+            currentEventSource.close();
+        }
+
+        // Create AI message div that will be updated
+        const aiMessageDiv = document.createElement('div');
+        aiMessageDiv.className = 'message ai';
+        aiMessageDiv.innerHTML = '';
+        chatMessages.appendChild(aiMessageDiv);
         chatMessages.scrollTop = chatMessages.scrollHeight;
 
-        try {
-            const res = await API.studentAiConsult(text);
-            document.getElementById(loadingId).remove();
+        const token = API.getToken();
+        const encodedMessage = encodeURIComponent(text);
 
-            if (res.code === 200) {
-                addMessage(res.data, 'ai');
-            } else {
-                addMessage('抱歉，AI服务暂时不可用：' + res.message, 'ai');
+        try {
+            const response = await fetch(
+                `${API.BASE_URL}/student/ai/consult/stream?message=${encodedMessage}`,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                }
+            );
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('HTTP Error:', response.status, errorText);
+                aiMessageDiv.textContent = `请求失败 (${response.status}): ${errorText.substring(0, 100)}`;
+                return;
             }
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = ''; // 用于处理不完整的数据块
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) {
+                    console.log('Stream completed');
+                    break;
+                }
+
+                // 解码并添加到缓冲区
+                buffer += decoder.decode(value, { stream: true });
+
+                // 按行分割
+                const lines = buffer.split('\n');
+
+                // 保留最后一个可能不完整的行
+                buffer = lines.pop() || '';
+
+                for (const line of lines) {
+                    if (line.startsWith('data:')) {
+                        let data = line.substring(5);
+                        // 处理SSE协议中的空格（如果存在）
+                        if (data.startsWith(' ')) {
+                            data = data.substring(1);
+                        }
+                        // 移除可能的行尾回车符
+                        if (data.endsWith('\r')) {
+                            data = data.substring(0, data.length - 1);
+                        }
+
+                        if (data && data !== '[DONE]') {
+                            // 累积原始文本
+                            aiMessageDiv.dataset.rawText = (aiMessageDiv.dataset.rawText || '') + data;
+                            // 格式化显示
+                            aiMessageDiv.innerHTML = formatAIMessage(aiMessageDiv.dataset.rawText);
+                            chatMessages.scrollTop = chatMessages.scrollHeight;
+                        }
+                    } else if (line.trim() === '') {
+                        // SSE事件之间的空行
+                        continue;
+                    }
+                }
+            }
+
+            // 处理缓冲区中剩余的数据
+            if (buffer.trim()) {
+                if (buffer.startsWith('data:')) {
+                    let data = buffer.substring(5);
+                    if (data.startsWith(' ')) {
+                        data = data.substring(1);
+                    }
+                    if (data.endsWith('\r')) {
+                        data = data.substring(0, data.length - 1);
+                    }
+
+                    if (data && data !== '[DONE]') {
+                        // 累积原始文本
+                        aiMessageDiv.dataset.rawText = (aiMessageDiv.dataset.rawText || '') + data;
+                        // 格式化显示
+                        aiMessageDiv.innerHTML = formatAIMessage(aiMessageDiv.dataset.rawText);
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                    }
+                }
+            }
+
+            // 如果没有收到任何内容，显示提示
+            if (!aiMessageDiv.innerHTML.trim()) {
+                aiMessageDiv.innerHTML = formatAIMessage('未收到回复，请重试');
+            }
+
         } catch (error) {
-            document.getElementById(loadingId).remove();
-            addMessage('网络请求失败，请稍后重试', 'ai');
+            console.error('Streaming error:', error);
+            aiMessageDiv.textContent = `连接错误: ${error.message || '网络请求失败，请稍后重试'}`;
         }
     }
 

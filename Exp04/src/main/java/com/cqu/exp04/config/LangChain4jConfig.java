@@ -1,5 +1,11 @@
 package com.cqu.exp04.config;
 
+import dev.langchain4j.model.dashscope.QwenChatModel;
+import dev.langchain4j.model.dashscope.QwenStreamingChatModel;
+import dev.langchain4j.model.chat.ChatLanguageModel;
+import dev.langchain4j.model.chat.StreamingChatLanguageModel;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
@@ -16,6 +22,30 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 public class LangChain4jConfig {
+
+    @Value("${langchain4j.dashscope.chat-model.api-key}")
+    private String apiKey;
+
+    @Value("${langchain4j.dashscope.chat-model.model-name}")
+    private String modelName;
+
+    @Value("${langchain4j.dashscope.chat-model.temperature:0.7}")
+    private Double temperature;
+
+    @Value("${langchain4j.dashscope.chat-model.top-p:0.8}")
+    private Double topP;
+
     // Spring Boot Starter 会自动配置 ChatLanguageModel Bean
-    // 无需手动配置,直接在 AIService 中 @Autowired 使用即可
+    // 但需要手动配置 StreamingChatLanguageModel
+
+    @Bean
+    public StreamingChatLanguageModel streamingChatLanguageModel() {
+        return QwenStreamingChatModel.builder()
+                .apiKey(apiKey)
+                .modelName(modelName)
+                .temperature(temperature.floatValue())
+                .topP((double) topP.floatValue())
+                .enableSearch(true)
+                .build();
+    }
 }

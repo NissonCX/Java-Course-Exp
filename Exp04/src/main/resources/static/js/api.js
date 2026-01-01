@@ -20,7 +20,8 @@ const API = {
             username: data.username,
             realName: data.realName,
             role: data.role,
-            userId: data.userId
+            userId: data.userId,
+            roleId: data.roleId
         }));
     },
 

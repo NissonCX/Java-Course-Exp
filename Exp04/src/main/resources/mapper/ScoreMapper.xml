@@ -32,6 +32,25 @@
         </association>
     </resultMap>
 
+    <resultMap id="ScoreWithTeachingClassResultMap" type="com.cqu.exp04.entity.Score" extends="ScoreResultMap">
+        <association property="teachingClass" javaType="com.cqu.exp04.entity.TeachingClass">
+            <id property="id" column="tc_id"/>
+            <result property="classNo" column="class_no"/>
+            <result property="semester" column="semester"/>
+            <result property="classroom" column="classroom"/>
+            <association property="course" javaType="com.cqu.exp04.entity.Course">
+                <id property="id" column="c_id"/>
+                <result property="courseNo" column="course_no"/>
+                <result property="courseName" column="course_name"/>
+                <result property="credit" column="credit"/>
+            </association>
+            <association property="teacher" javaType="com.cqu.exp04.entity.Teacher">
+                <id property="id" column="t_id"/>
+                <result property="name" column="t_name"/>
+            </association>
+        </association>
+    </resultMap>
+
     <select id="findById" resultMap="ScoreResultMap">
         SELECT * FROM score WHERE id = #{id}
     </select>
@@ -40,12 +59,31 @@
         SELECT * FROM score WHERE enrollment_id = #{enrollmentId}
     </select>
 
-    <select id="findByStudentId" resultMap="ScoreResultMap">
-        SELECT * FROM score WHERE student_id = #{studentId} ORDER BY create_time DESC
+    <select id="findByStudentId" resultMap="ScoreWithTeachingClassResultMap">
+        SELECT
+            s.*,
+            tc.id as tc_id, tc.class_no, tc.semester, tc.classroom,
+            c.id as c_id, c.course_no, c.course_name, c.credit,
+            t.id as t_id, t.name as t_name
+        FROM score s
+        LEFT JOIN teaching_class tc ON s.teaching_class_id = tc.id
+        LEFT JOIN course c ON tc.course_id = c.id
+        LEFT JOIN teacher t ON tc.teacher_id = t.id
+        WHERE s.student_id = #{studentId}
+        ORDER BY s.create_time DESC
     </select>
 
-    <select id="findByTeachingClassId" resultMap="ScoreResultMap">
-        SELECT * FROM score WHERE teaching_class_id = #{teachingClassId} ORDER BY total_score DESC
+    <select id="findByTeachingClassId" resultMap="ScoreWithStudentResultMap">
+        SELECT
+            s.*,
+            st.id as s_id,
+            st.student_no,
+            st.name as s_name,
+            st.major
+        FROM score s
+        LEFT JOIN student st ON s.student_id = st.id
+        WHERE s.teaching_class_id = #{teachingClassId}
+        ORDER BY s.total_score DESC
     </select>
 
     <select id="findStudentScoreDetails" resultType="com.cqu.exp04.vo.StudentScoreVO">
@@ -101,6 +139,23 @@
         )
     </insert>
 
+    <insert id="batchInsert">
+        INSERT INTO score (
+            enrollment_id, student_id, teaching_class_id,
+            usual_score, midterm_score, experiment_score, final_score,
+            total_score, grade_point,
+            usual_score_time, midterm_score_time, experiment_score_time,
+            final_score_time, total_score_time
+        ) VALUES
+        <foreach collection="scores" item="item" separator=",">
+            (#{item.enrollmentId}, #{item.studentId}, #{item.teachingClassId},
+             #{item.usualScore}, #{item.midtermScore}, #{item.experimentScore}, #{item.finalScore},
+             #{item.totalScore}, #{item.gradePoint},
+             #{item.usualScoreTime}, #{item.midtermScoreTime}, #{item.experimentScoreTime},
+             #{item.finalScoreTime}, #{item.totalScoreTime})
+        </foreach>
+    </insert>
+
     <update id="update" parameterType="com.cqu.exp04.entity.Score">
         UPDATE score
         <set>
@@ -127,6 +182,17 @@
         SELECT AVG(total_score)
         FROM score
         WHERE student_id = #{studentId} AND total_score IS NOT NULL
+    </select>
+
+    <select id="countScoreDistribution" resultType="java.lang.Integer">
+        SELECT
+            SUM(CASE WHEN total_score >= 90 THEN 1 ELSE 0 END) as excellent,
+            SUM(CASE WHEN total_score >= 80 AND total_score &lt; 90 THEN 1 ELSE 0 END) as good,
+            SUM(CASE WHEN total_score >= 70 AND total_score &lt; 80 THEN 1 ELSE 0 END) as medium,
+            SUM(CASE WHEN total_score >= 60 AND total_score &lt; 70 THEN 1 ELSE 0 END) as pass,
+            SUM(CASE WHEN total_score &lt; 60 THEN 1 ELSE 0 END) as fail
+        FROM score
+        WHERE teaching_class_id = #{teachingClassId} AND total_score IS NOT NULL
     </select>
 
 </mapper>

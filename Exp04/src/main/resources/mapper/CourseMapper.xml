@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cqu.exp04.mapper.CourseMapper">
+
+    <resultMap id="CourseResultMap" type="com.cqu.exp04.entity.Course">
+        <id property="id" column="id"/>
+        <result property="courseNo" column="course_no"/>
+        <result property="courseName" column="course_name"/>
+        <result property="credit" column="credit"/>
+        <result property="hours" column="hours"/>
+        <result property="courseType" column="course_type"/>
+        <result property="description" column="description"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <select id="findById" resultMap="CourseResultMap">
+        SELECT * FROM course WHERE id = #{id}
+    </select>
+
+    <select id="findByCourseNo" resultMap="CourseResultMap">
+        SELECT * FROM course WHERE course_no = #{courseNo}
+    </select>
+
+    <select id="findAll" resultMap="CourseResultMap">
+        SELECT * FROM course ORDER BY course_no
+    </select>
+
+    <insert id="insert" parameterType="com.cqu.exp04.entity.Course" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO course (
+            course_no, course_name, credit, hours, course_type, description
+        ) VALUES (
+            #{courseNo}, #{courseName}, #{credit}, #{hours}, #{courseType}, #{description}
+        )
+    </insert>
+
+    <insert id="batchInsert">
+        INSERT INTO course (
+            course_no, course_name, credit, hours, course_type, description
+        ) VALUES
+        <foreach collection="courses" item="item" separator=",">
+            (#{item.courseNo}, #{item.courseName}, #{item.credit}, #{item.hours},
+             #{item.courseType}, #{item.description})
+        </foreach>
+    </insert>
+
+    <update id="update" parameterType="com.cqu.exp04.entity.Course">
+        UPDATE course
+        <set>
+            <if test="courseName != null">course_name = #{courseName},</if>
+            <if test="credit != null">credit = #{credit},</if>
+            <if test="hours != null">hours = #{hours},</if>
+            <if test="courseType != null">course_type = #{courseType},</if>
+            <if test="description != null">description = #{description},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM course WHERE id = #{id}
+    </delete>
+
+</mapper>

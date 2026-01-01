@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cqu.exp04.mapper.TeacherMapper">
+
+    <resultMap id="TeacherResultMap" type="com.cqu.exp04.entity.Teacher">
+        <id property="id" column="id"/>
+        <result property="teacherNo" column="teacher_no"/>
+        <result property="userId" column="user_id"/>
+        <result property="name" column="name"/>
+        <result property="gender" column="gender"/>
+        <result property="title" column="title"/>
+        <result property="department" column="department"/>
+        <result property="email" column="email"/>
+        <result property="phone" column="phone"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <select id="findByTeacherNo" resultMap="TeacherResultMap">
+        SELECT * FROM teacher WHERE teacher_no = #{teacherNo}
+    </select>
+
+    <select id="findByUserId" resultMap="TeacherResultMap">
+        SELECT * FROM teacher WHERE user_id = #{userId}
+    </select>
+
+    <select id="findById" resultMap="TeacherResultMap">
+        SELECT * FROM teacher WHERE id = #{id}
+    </select>
+
+    <select id="findAll" resultMap="TeacherResultMap">
+        SELECT * FROM teacher ORDER BY teacher_no
+    </select>
+
+    <insert id="insert" parameterType="com.cqu.exp04.entity.Teacher" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO teacher (
+            teacher_no, user_id, name, gender, title,
+            department, email, phone
+        ) VALUES (
+            #{teacherNo}, #{userId}, #{name}, #{gender}, #{title},
+            #{department}, #{email}, #{phone}
+        )
+    </insert>
+
+    <insert id="batchInsert">
+        INSERT INTO teacher (
+            teacher_no, user_id, name, gender, title,
+            department, email, phone
+        ) VALUES
+        <foreach collection="teachers" item="item" separator=",">
+            (#{item.teacherNo}, #{item.userId}, #{item.name}, #{item.gender}, #{item.title},
+             #{item.department}, #{item.email}, #{item.phone})
+        </foreach>
+    </insert>
+
+    <update id="update" parameterType="com.cqu.exp04.entity.Teacher">
+        UPDATE teacher
+        <set>
+            <if test="name != null">name = #{name},</if>
+            <if test="gender != null">gender = #{gender},</if>
+            <if test="title != null">title = #{title},</if>
+            <if test="department != null">department = #{department},</if>
+            <if test="email != null">email = #{email},</if>
+            <if test="phone != null">phone = #{phone},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM teacher WHERE id = #{id}
+    </delete>
+
+</mapper>

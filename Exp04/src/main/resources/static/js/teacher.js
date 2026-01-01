@@ -76,13 +76,13 @@ document.addEventListener('DOMContentLoaded', () => {
             card.innerHTML = `
                 <div class="course-header">
                     <div class="class-card-header">
-                        <span class="course-title">${c.courseName}</span>
-                        <span class="tag">${c.term}</span>
+                        <span class="course-title">${c.course?.courseName || '未知课程'}</span>
+                        <span class="tag">${c.semester || '-'}</span>
                     </div>
-                    <div class="course-code">${c.classNo}</div>
+                    <div class="course-code">${c.classNo || '-'}</div>
                 </div>
                 <div class="course-body">
-                    <p>选课人数: ${c.enrollCount || 0}</p>
+                    <p>选课人数: ${c.currentStudents || 0}/${c.maxStudents || 0}</p>
                     <button class="btn btn-primary" style="margin-top: 1rem; width: 100%;">管理成绩</button>
                 </div>
             `;
@@ -94,7 +94,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Feature: Class Detail & Score Input ---
     async function openClassDetail(cls) {
         currentClassId = cls.id;
-        document.getElementById('currentClassName').textContent = `${cls.courseName} (${cls.classNo})`;
+        const courseName = cls.course?.courseName || '未知课程';
+        document.getElementById('currentClassName').textContent = `${courseName} (${cls.classNo || '-'})`;
         showView('class-detail');
 
         // Load students and stats parallel
@@ -136,17 +137,24 @@ document.addEventListener('DOMContentLoaded', () => {
         const tbody = document.querySelector('#scoreInputTable tbody');
         tbody.innerHTML = '';
 
+        if(!scores || scores.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center">暂无学生数据</td></tr>';
+            return;
+        }
+
         scores.forEach(s => {
             const tr = document.createElement('tr');
-            tr.dataset.studentId = s.studentId;
+            tr.dataset.studentId = s.student?.id || s.studentId;
+            const studentNo = s.student?.studentNo || '-';
+            const studentName = s.student?.name || '-';
             tr.innerHTML = `
-                <td>${s.studentNo}</td>
-                <td>${s.studentName}</td>
+                <td>${studentNo}</td>
+                <td>${studentName}</td>
                 <td><input type="number" class="input-score" name="usual" value="${s.usualScore || ''}" min="0" max="100"></td>
                 <td><input type="number" class="input-score" name="midterm" value="${s.midtermScore || ''}" min="0" max="100"></td>
                 <td><input type="number" class="input-score" name="experiment" value="${s.experimentScore || ''}" min="0" max="100"></td>
                 <td><input type="number" class="input-score" name="final" value="${s.finalScore || ''}" min="0" max="100"></td>
-                <td><span class="score-badge ${Utils.getScoreClass(s.totalScore)}">${s.totalScore || '-'}</span></td>
+                <td><span class="score-badge ${Utils.getScoreClass(s.totalScore)}">${s.totalScore ? s.totalScore.toFixed(1) : '-'}</span></td>
                 <td><button class="btn btn-primary btn-sm save-row-btn">保存</button></td>
             `;
 
@@ -194,7 +202,8 @@ document.addEventListener('DOMContentLoaded', () => {
         myClasses.forEach(c => {
             const opt = document.createElement('option');
             opt.value = c.id;
-            opt.textContent = `${c.courseName} (${c.classNo})`;
+            const courseName = c.course?.courseName || '未知课程';
+            opt.textContent = `${courseName} (${c.classNo || '-'})`;
             select.appendChild(opt);
         });
     }
@@ -202,6 +211,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const analysisInput = document.getElementById('analysisInput');
     const sendAnalysisBtn = document.getElementById('sendAnalysisBtn');
     const analysisMessages = document.getElementById('analysisMessages');
+
+    let currentEventSource = null; // Track current SSE connection
 
     async function handleAnalysis() {
         const classId = document.getElementById('analysisClassSelect').value;
@@ -216,20 +227,113 @@ document.addEventListener('DOMContentLoaded', () => {
         addMsg(text, 'user');
         analysisInput.value = '';
 
-        const loadId = 'loading-' + Date.now();
-        addMsg('分析中...', 'ai', loadId);
+        // Close existing connection if any
+        if (currentEventSource) {
+            currentEventSource.close();
+        }
+
+        // Create AI message div that will be updated
+        const aiMessageDiv = document.createElement('div');
+        aiMessageDiv.className = 'message ai';
+        aiMessageDiv.innerHTML = '';
+        analysisMessages.appendChild(aiMessageDiv);
+        analysisMessages.scrollTop = analysisMessages.scrollHeight;
+
+        const token = API.getToken();
+        const encodedMessage = encodeURIComponent(text);
 
         try {
-            const res = await API.teacherAiConsult(parseInt(classId), text);
-            document.getElementById(loadId).remove();
-            if (res.code === 200) {
-                addMsg(res.data, 'ai');
-            } else {
-                addMsg('AI服务异常: ' + res.message, 'ai');
+            const response = await fetch(
+                `${API.BASE_URL}/teacher/ai/consult/stream?teachingClassId=${classId}&message=${encodedMessage}`,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                }
+            );
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('HTTP Error:', response.status, errorText);
+                aiMessageDiv.textContent = `请求失败 (${response.status})`;
+                return;
             }
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = ''; // 用于处理不完整的数据块
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) {
+                    console.log('Stream completed');
+                    break;
+                }
+
+                // 解码并添加到缓冲区
+                buffer += decoder.decode(value, { stream: true });
+
+                // 按行分割
+                const lines = buffer.split('\n');
+
+                // 保留最后一个可能不完整的行
+                buffer = lines.pop() || '';
+
+                for (const line of lines) {
+                    if (line.startsWith('data:')) {
+                        let data = line.substring(5);
+                        // 处理SSE协议中的空格（如果存在）
+                        if (data.startsWith(' ')) {
+                            data = data.substring(1);
+                        }
+                        // 移除可能的行尾回车符
+                        if (data.endsWith('\r')) {
+                            data = data.substring(0, data.length - 1);
+                        }
+
+                        if (data && data !== '[DONE]') {
+                            // 累积原始文本
+                            aiMessageDiv.dataset.rawText = (aiMessageDiv.dataset.rawText || '') + data;
+                            // 格式化显示
+                            aiMessageDiv.innerHTML = formatAIMessage(aiMessageDiv.dataset.rawText);
+                            analysisMessages.scrollTop = analysisMessages.scrollHeight;
+                        }
+                    } else if (line.trim() === '') {
+                        // SSE事件之间的空行
+                        continue;
+                    }
+                }
+            }
+
+            // 处理缓冲区中剩余的数据
+            if (buffer.trim()) {
+                if (buffer.startsWith('data:')) {
+                    let data = buffer.substring(5);
+                    if (data.startsWith(' ')) {
+                        data = data.substring(1);
+                    }
+                    if (data.endsWith('\r')) {
+                        data = data.substring(0, data.length - 1);
+                    }
+                    
+                    if (data && data !== '[DONE]') {
+                        // 累积原始文本
+                        aiMessageDiv.dataset.rawText = (aiMessageDiv.dataset.rawText || '') + data;
+                        // 格式化显示
+                        aiMessageDiv.innerHTML = formatAIMessage(aiMessageDiv.dataset.rawText);
+                        analysisMessages.scrollTop = analysisMessages.scrollHeight;
+                    }
+                }
+            }
+
+            // 如果没有收到任何内容，显示提示
+            if (!aiMessageDiv.innerHTML.trim()) {
+                aiMessageDiv.innerHTML = formatAIMessage('未收到回复，请重试');
+            }
+
         } catch (e) {
-            document.getElementById(loadId).remove();
-            addMsg('网络错误', 'ai');
+            console.error('Streaming error:', e);
+            aiMessageDiv.textContent = `连接错误: ${e.message || '网络错误'}`;
         }
     }
 
@@ -237,9 +341,31 @@ document.addEventListener('DOMContentLoaded', () => {
         const div = document.createElement('div');
         div.className = `message ${type}`;
         if (id) div.id = id;
-        div.textContent = text;
+        div.innerHTML = formatAIMessage(text);
         analysisMessages.appendChild(div);
         analysisMessages.scrollTop = analysisMessages.scrollHeight;
+    }
+
+    // 格式化AI消息，使用marked库处理Markdown
+    function formatAIMessage(text) {
+        if (!text) return '';
+        try {
+            // 预处理：修复常见的格式问题以优化 Markdown 解析
+            let processed = text
+                // 1. 确保标题标记前有换行，且 # 后有空格
+                .replace(/([^\n])\s*(#{1,6})([^\s#])/g, '$1\n\n$2 $3')
+                .replace(/([^\n])\s*(#{1,6})\s+/g, '$1\n\n$2 ')
+                // 2. 确保列表项前有换行
+                .replace(/([^\n])\s*(\-\s)/g, '$1\n\n$2')
+                // 3. 确保数字列表项前有换行 (1. xxx)
+                .replace(/([^\n])\s*(\d+\.\s)/g, '$1\n\n$2');
+
+            // 启用换行符转 <br>，确保单换行也能显示
+            return marked.parse(processed, { breaks: true });
+        } catch (e) {
+            console.error('Markdown parsing error:', e);
+            return text;
+        }
     }
 
     sendAnalysisBtn.addEventListener('click', handleAnalysis);

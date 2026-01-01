@@ -35,6 +35,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/course/**").permitAll()  // 课程查询接口无需认证
                         // 放行静态资源
                         .requestMatchers("/", "/index.html", "/student.html", "/teacher.html", "/css/**", "/js/**", "/favicon.ico", "/error").permitAll()
+                        // 放行SSE流式端点（避免异步分发时的SecurityContext问题，在Controller中已手动验证JWT）
+                        .requestMatchers("/api/student/ai/consult/stream", "/api/teacher/ai/consult/stream").permitAll()
                         .requestMatchers("/api/student/**").hasRole("STUDENT")
                         .requestMatchers("/api/teacher/**").hasRole("TEACHER")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")

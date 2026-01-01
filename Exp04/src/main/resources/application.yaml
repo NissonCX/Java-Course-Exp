@@ -31,7 +31,7 @@ logging:
 
 # JWT Configuration
 jwt:
-  secret: NissonCX0528
+  secret: KSH6vF7U1eLW/xQi831jARHg6/Z+0bOF44LwOQg39UQ=
   expiration: 86400000  # 24 hours in milliseconds
 
 # LangChain4j Configuration

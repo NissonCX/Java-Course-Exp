@@ -2,12 +2,16 @@ package com.cqu.exp04.controller;
 
 import com.cqu.exp04.dto.AIConsultRequest;
 import com.cqu.exp04.entity.Student;
+import com.cqu.exp04.security.JwtUtil;
+import com.cqu.exp04.service.AIService;
 import com.cqu.exp04.service.StudentService;
 import com.cqu.exp04.vo.Result;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.Map;
 
@@ -21,6 +25,12 @@ public class StudentController {
 
     @Autowired
     private StudentService studentService;
+
+    @Autowired
+    private AIService aiService;
+
+    @Autowired
+    private JwtUtil jwtUtil;
 
     /**
      * 获取个人信息
@@ -122,5 +132,37 @@ public class StudentController {
         } catch (Exception e) {
             return Result.error("AI咨询失败: " + e.getMessage());
         }
+    }
+
+    /**
+     * AI学习建议咨询 - 流式输出
+     */
+    @GetMapping(value = "/ai/consult/stream", produces = "text/event-stream")
+    public SseEmitter aiConsultStream(@RequestParam String message,
+                                      @RequestHeader("Authorization") String authHeader) {
+        SseEmitter emitter = new SseEmitter(120000L); // 120秒超时
+
+        try {
+            // 从Authorization header解析JWT token
+            if (!StringUtils.hasText(authHeader) || !authHeader.startsWith("Bearer ")) {
+                emitter.completeWithError(new RuntimeException("无效的认证token"));
+                return emitter;
+            }
+
+            String token = authHeader.substring(7);
+            if (!jwtUtil.validateToken(token)) {
+                emitter.completeWithError(new RuntimeException("token已过期"));
+                return emitter;
+            }
+
+            Long studentId = jwtUtil.getRoleIdFromToken(token);
+
+            // 直接在Controller线程中调用，保持SecurityContext
+            aiService.studentConsultStreamingSync(studentId, message, emitter);
+        } catch (Exception e) {
+            emitter.completeWithError(e);
+        }
+
+        return emitter;
     }
 }
