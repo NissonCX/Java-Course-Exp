@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>注册 - 学生成绩管理系统</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/login.css">
+    <style>
+        .tab-header {
+            display: flex;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .tab-item {
+            flex: 1;
+            text-align: center;
+            padding: 0.75rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            border-bottom: 2px solid transparent;
+        }
+        .tab-item.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+            font-weight: 600;
+        }
+        .register-form {
+            display: none;
+        }
+        .register-form.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-page">
+        <div class="login-card" style="max-width: 450px;">
+            <div class="login-header">
+                <div class="login-logo">🎓</div>
+                <h1 class="login-title">账号注册</h1>
+            </div>
+
+            <div class="tab-header">
+                <div class="tab-item active" data-tab="student">学生注册</div>
+                <div class="tab-item" data-tab="teacher">教师注册</div>
+            </div>
+
+            <!-- Student Register Form -->
+            <form id="studentForm" class="register-form active">
+                <div class="form-group">
+                    <label class="input-label">用户名</label>
+                    <input type="text" name="username" class="form-control" placeholder="设置登录用户名" required>
+                </div>
+                <div class="form-group">
+                    <label class="input-label">密码</label>
+                    <input type="password" name="password" class="form-control" placeholder="设置登录密码" required>
+                </div>
+                <div class="form-group">
+                    <label class="input-label">学号</label>
+                    <input type="text" name="studentNo" class="form-control" placeholder="请输入学号" required>
+                </div>
+                <div class="form-group">
+                    <label class="input-label">姓名</label>
+                    <input type="text" name="name" class="form-control" placeholder="请输入真实姓名" required>
+                </div>
+                <div class="form-group">
+                    <label class="input-label">班级</label>
+                    <input type="text" name="className" class="form-control" placeholder="例如: 计科2101" required>
+                </div>
+                <div class="form-group">
+                    <label class="input-label">邮箱</label>
+                    <input type="email" name="email" class="form-control" placeholder="请输入邮箱">
+                </div>
+                <div class="form-group">
+                    <label class="input-label">电话</label>
+                    <input type="tel" name="phone" class="form-control" placeholder="请输入电话">
+                </div>
+                <button type="submit" class="btn btn-primary login-btn">注册学生账号</button>
+            </form>
+
+            <!-- Teacher Register Form -->
+            <form id="teacherForm" class="register-form">
+                <div class="form-group">
+                    <label class="input-label">用户名</label>
+                    <input type="text" name="username" class="form-control" placeholder="设置登录用户名" required>
+                </div>
+                <div class="form-group">
+                    <label class="input-label">密码</label>
+                    <input type="password" name="password" class="form-control" placeholder="设置登录密码" required>
+                </div>
+                <div class="form-group">
+                    <label class="input-label">工号</label>
+                    <input type="text" name="teacherNo" class="form-control" placeholder="请输入工号" required>
+                </div>
+                <div class="form-group">
+                    <label class="input-label">姓名</label>
+                    <input type="text" name="name" class="form-control" placeholder="请输入真实姓名" required>
+                </div>
+                <div class="form-group">
+                    <label class="input-label">邮箱</label>
+                    <input type="email" name="email" class="form-control" placeholder="请输入邮箱">
+                </div>
+                <div class="form-group">
+                    <label class="input-label">电话</label>
+                    <input type="tel" name="phone" class="form-control" placeholder="请输入电话">
+                </div>
+                <button type="submit" class="btn btn-primary login-btn">注册教师账号</button>
+            </form>
+
+            <div style="text-align: center; margin-top: 1rem;">
+                <a href="index.html" style="color: var(--text-secondary); text-decoration: none;">已有账号？返回登录</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/utils.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/register.js"></script>
+</body>
+</html>
+

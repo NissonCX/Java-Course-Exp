@@ -97,6 +97,9 @@ public class StudentController {
         try {
             Long studentId = (Long) request.getAttribute("roleId");
             Long teachingClassId = params.get("teachingClassId");
+            if (teachingClassId == null) {
+                return Result.error("选课失败: 缺少参数 teachingClassId");
+            }
             studentService.enrollCourse(studentId, teachingClassId);
             return Result.success("选课成功");
         } catch (Exception e) {

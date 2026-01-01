@@ -51,6 +51,9 @@
                 <a href="#" class="nav-item" data-view="analysis">
                     🤖 教学分析
                 </a>
+                <a href="#" class="nav-item" data-view="profile">
+                    👤 个人信息
+                </a>
             </div>
         </aside>
 
@@ -131,6 +134,32 @@
                             <button class="btn btn-primary" id="sendAnalysisBtn">分析</button>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <!-- View: Profile -->
+            <div id="view-profile" class="view-section" style="display: none;">
+                <h2 style="margin-bottom: var(--spacing-lg);">个人信息</h2>
+                <div class="card" style="max-width: 600px;">
+                    <form id="profileForm">
+                        <div class="form-group">
+                            <label class="input-label">工号</label>
+                            <input type="text" id="profileTeacherNo" class="form-control" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label class="input-label">姓名</label>
+                            <input type="text" id="profileName" class="form-control" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label class="input-label">邮箱</label>
+                            <input type="email" id="profileEmail" name="email" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label class="input-label">电话</label>
+                            <input type="tel" id="profilePhone" name="phone" class="form-control">
+                        </div>
+                        <button type="submit" class="btn btn-primary">保存修改</button>
+                    </form>
                 </div>
             </div>
         </main>

@@ -6,6 +6,32 @@
     <title>学生端 - 学生成绩管理系统</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/dashboard.css">
+    <style>
+        .tab-header {
+            display: flex;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .tab-item {
+            flex: 1;
+            text-align: center;
+            padding: 0.75rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            border-bottom: 2px solid transparent;
+        }
+        .tab-item.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+            font-weight: 600;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+    </style>
 </head>
 <body>
     <nav class="navbar">
@@ -27,11 +53,14 @@
                 <a href="#" class="nav-item active" data-view="scores">
                     📊 我的成绩
                 </a>
-                <a href="#" class="nav-item" data-view="enrollments">
-                    📚 选课中心
+                <a href="#" class="nav-item" data-view="course-manage">
+                    📚 选课管理
                 </a>
                 <a href="#" class="nav-item" data-view="ai-advisor">
                     🤖 AI 学业顾问
+                </a>
+                <a href="#" class="nav-item" data-view="profile">
+                    👤 个人信息
                 </a>
             </div>
         </aside>
@@ -91,29 +120,63 @@
                 </div>
             </div>
 
-            <!-- View: Enrollments -->
-            <div id="view-enrollments" class="view-section" style="display: none;">
-                <h2 style="margin-bottom: var(--spacing-lg);">我的选课</h2>
+            <!-- View: Course Management -->
+            <div id="view-course-manage" class="view-section" style="display: none;">
+                <h2 style="margin-bottom: var(--spacing-lg);">选课管理</h2>
+
                 <div class="card">
-                    <p style="color: var(--text-secondary); margin-bottom: var(--spacing-md);">
-                        已选课程列表。如需退课，请点击相应按钮。
-                    </p>
-                    <div class="table-container">
-                        <table id="enrollmentsTable">
-                            <thead>
-                                <tr>
-                                    <th>教学班号</th>
-                                    <th>课程名称</th>
-                                    <th>授课教师</th>
-                                    <th>学期</th>
-                                    <th>状态</th>
-                                    <th>操作</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- Populated by JS -->
-                            </tbody>
-                        </table>
+                    <div class="tab-header">
+                        <div class="tab-item active" data-tab="enrollments">已选课程</div>
+                        <div class="tab-item" data-tab="selection">选课大厅</div>
+                    </div>
+
+                    <!-- Tab: My Enrollments -->
+                    <div id="tab-enrollments" class="tab-content active">
+                        <p style="color: var(--text-secondary); margin-bottom: var(--spacing-md);">
+                            已选课程列表。如需退课，请点击相应按钮。
+                        </p>
+                        <div class="table-container">
+                            <table id="enrollmentsTable">
+                                <thead>
+                                    <tr>
+                                        <th>教学班号</th>
+                                        <th>课程名称</th>
+                                        <th>授课教师</th>
+                                        <th>学期</th>
+                                        <th>状态</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Populated by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Tab: Course Selection -->
+                    <div id="tab-selection" class="tab-content">
+                        <div style="margin-bottom: 1rem; display: flex; gap: 1rem;">
+                            <input type="text" id="semesterInput" class="form-control" placeholder="学期 (例如: 2023-2024-1)" style="max-width: 200px;">
+                            <button class="btn btn-primary" id="searchCoursesBtn">查询</button>
+                        </div>
+                        <div class="table-container">
+                            <table id="availableCoursesTable">
+                                <thead>
+                                    <tr>
+                                        <th>教学班号</th>
+                                        <th>课程名称</th>
+                                        <th>授课教师</th>
+                                        <th>学期</th>
+                                        <th>已选/容量</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Populated by JS -->
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -135,6 +198,38 @@
                     </div>
                 </div>
             </div>
+
+
+            <!-- View: Profile -->
+            <div id="view-profile" class="view-section" style="display: none;">
+                <h2 style="margin-bottom: var(--spacing-lg);">个人信息</h2>
+                <div class="card" style="max-width: 600px;">
+                    <form id="profileForm">
+                        <div class="form-group">
+                            <label class="input-label">学号</label>
+                            <input type="text" id="profileStudentNo" class="form-control" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label class="input-label">姓名</label>
+                            <input type="text" id="profileName" class="form-control" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label class="input-label">班级</label>
+                            <input type="text" id="profileClass" class="form-control" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label class="input-label">邮箱</label>
+                            <input type="email" id="profileEmail" name="email" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label class="input-label">电话</label>
+                            <input type="tel" id="profilePhone" name="phone" class="form-control">
+                        </div>
+                        <button type="submit" class="btn btn-primary">保存修改</button>
+                    </form>
+                </div>
+            </div>
+
         </main>
     </div>
 

@@ -90,8 +90,31 @@ const API = {
             body: JSON.stringify({ username, password })
         });
     },
+    registerStudent: (data) => {
+        return API.request('/auth/register/student', {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    },
+    registerTeacher: (data) => {
+        return API.request('/auth/register/teacher', {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    },
 
     // --- Student Methods ---
+    getStudentProfile: () => API.request('/student/profile'),
+    updateStudentProfile: (data) => {
+        return API.request('/student/profile', {
+            method: 'PUT',
+            body: JSON.stringify(data)
+        });
+    },
+    getAvailableClasses: (semester) => {
+        const query = semester ? `?semester=${semester}` : '';
+        return API.request(`/course/classes${query}`);
+    },
     getStudentScores: () => API.request('/student/scores'),
     getStudentEnrollments: () => API.request('/student/enrollments'),
     enrollCourse: (teachingClassId) => {
@@ -113,6 +136,13 @@ const API = {
     },
 
     // --- Teacher Methods ---
+    getTeacherProfile: () => API.request('/teacher/profile'),
+    updateTeacherProfile: (data) => {
+        return API.request('/teacher/profile', {
+            method: 'PUT',
+            body: JSON.stringify(data)
+        });
+    },
     getTeacherClasses: () => API.request('/teacher/classes'),
     getClassStudents: (classId) => API.request(`/teacher/class/${classId}/students`),
     getClassScores: (classId) => API.request(`/teacher/class/${classId}/scores`),
@@ -121,6 +151,12 @@ const API = {
         return API.request('/teacher/score/input', {
             method: 'POST',
             body: JSON.stringify(data)
+        });
+    },
+    batchInputScores: (teachingClassId, scores) => {
+        return API.request('/teacher/score/batch', {
+            method: 'POST',
+            body: JSON.stringify({ teachingClassId, scores })
         });
     },
     teacherAiConsult: (teachingClassId, message) => {

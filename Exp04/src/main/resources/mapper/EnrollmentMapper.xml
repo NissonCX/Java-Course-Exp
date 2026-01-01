@@ -18,6 +18,7 @@
             <id property="id" column="s_id"/>
             <result property="studentNo" column="student_no"/>
             <result property="name" column="s_name"/>
+            <result property="gender" column="s_gender"/>
             <result property="major" column="major"/>
             <result property="className" column="class_name"/>
         </association>
@@ -46,7 +47,7 @@
     <select id="findById" resultMap="EnrollmentWithDetailsResultMap">
         SELECT
             e.*,
-            s.id as s_id, s.student_no, s.name as s_name, s.major, s.class_name,
+            s.id as s_id, s.student_no, s.name as s_name, s.gender as s_gender, s.major, s.class_name,
             tc.id as tc_id, tc.class_no, tc.semester, tc.classroom, tc.schedule,
             c.id as c_id, c.course_no, c.course_name, c.credit, c.hours,
             t.id as t_id, t.teacher_no, t.name as t_name, t.title
@@ -61,7 +62,7 @@
     <select id="findByStudentId" resultMap="EnrollmentWithDetailsResultMap">
         SELECT
             e.*,
-            s.id as s_id, s.student_no, s.name as s_name, s.major, s.class_name,
+            s.id as s_id, s.student_no, s.name as s_name, s.gender as s_gender, s.major, s.class_name,
             tc.id as tc_id, tc.class_no, tc.semester, tc.classroom, tc.schedule,
             c.id as c_id, c.course_no, c.course_name, c.credit, c.hours,
             t.id as t_id, t.teacher_no, t.name as t_name, t.title
@@ -77,7 +78,7 @@
     <select id="findByTeachingClassId" resultMap="EnrollmentWithDetailsResultMap">
         SELECT
             e.*,
-            s.id as s_id, s.student_no, s.name as s_name, s.major, s.class_name,
+            s.id as s_id, s.student_no, s.name as s_name, s.gender as s_gender, s.major, s.class_name,
             tc.id as tc_id, tc.class_no, tc.semester, tc.classroom, tc.schedule,
             c.id as c_id, c.course_no, c.course_name, c.credit, c.hours,
             t.id as t_id, t.teacher_no, t.name as t_name, t.title

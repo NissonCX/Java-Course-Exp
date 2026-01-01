@@ -34,12 +34,151 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Load Data based on View
             if (viewId === 'scores') loadScores();
-            if (viewId === 'enrollments') loadEnrollments();
+            if (viewId === 'course-manage') loadCourseManage();
+            if (viewId === 'profile') loadProfile();
+        });
+    });
+
+    // Tab Handler for Course Management
+    const tabs = document.querySelectorAll('.tab-item');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            // Update Tabs
+            tabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+
+            // Update Content
+            const target = tab.dataset.tab;
+            tabContents.forEach(c => {
+                c.classList.remove('active');
+                if (c.id === `tab-${target}`) {
+                    c.classList.add('active');
+                }
+            });
+
+            // Load Data
+            if (target === 'enrollments') loadEnrollments();
+            if (target === 'selection') loadAvailableCourses();
         });
     });
 
     // Initial Load
     loadScores();
+
+    function loadCourseManage() {
+        // Default to enrollments tab
+        const activeTab = document.querySelector('.tab-item.active');
+        if (activeTab && activeTab.dataset.tab === 'selection') {
+            loadAvailableCourses();
+        } else {
+            loadEnrollments();
+        }
+    }
+
+    // --- Feature: Profile ---
+    async function loadProfile() {
+        showLoading(true);
+        try {
+            const res = await API.getStudentProfile();
+            if (res.code === 200) {
+                const s = res.data;
+                document.getElementById('profileStudentNo').value = s.studentNo || '';
+                document.getElementById('profileName').value = s.name || '';
+                document.getElementById('profileClass').value = s.className || '';
+                document.getElementById('profileEmail').value = s.email || '';
+                document.getElementById('profilePhone').value = s.phone || '';
+            }
+        } catch (error) {
+            Utils.showToast('加载个人信息失败', 'error');
+        } finally {
+            showLoading(false);
+        }
+    }
+
+    document.getElementById('profileForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const data = {
+            email: document.getElementById('profileEmail').value,
+            phone: document.getElementById('profilePhone').value
+        };
+        try {
+            const res = await API.updateStudentProfile(data);
+            if (res.code === 200) {
+                Utils.showToast('更新成功', 'success');
+            } else {
+                Utils.showToast(res.message, 'error');
+            }
+        } catch (error) {
+            Utils.showToast('更新失败', 'error');
+        }
+    });
+
+    // --- Feature: Course Selection ---
+    document.getElementById('searchCoursesBtn').addEventListener('click', () => loadAvailableCourses());
+
+    async function loadAvailableCourses() {
+        showLoading(true);
+        const semester = document.getElementById('semesterInput').value.trim();
+        try {
+            const res = await API.getAvailableClasses(semester);
+            if (res.code === 200) {
+                renderAvailableCourses(res.data);
+            }
+        } catch (error) {
+            Utils.showToast('加载可选课程失败', 'error');
+        } finally {
+            showLoading(false);
+        }
+    }
+
+    function renderAvailableCourses(list) {
+        const tbody = document.querySelector('#availableCoursesTable tbody');
+        tbody.innerHTML = '';
+
+        if (!list || list.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center">暂无可选课程</td></tr>';
+            return;
+        }
+
+        list.forEach(item => {
+            const tr = document.createElement('tr');
+            const teachingClassId = item.teachingClassId ?? item.id;
+            tr.innerHTML = `
+                <td>${item.classNo || '-'}</td>
+                <td>${item.courseName || '-'}</td>
+                <td>${item.teacherName || '-'}</td>
+                <td>${item.semester || '-'}</td>
+                <td>${item.currentStudents || 0} / ${item.maxStudents || 0}</td>
+                <td>
+                    <button class="btn btn-primary btn-sm" onclick="handleEnroll(${teachingClassId})" ${teachingClassId ? '' : 'disabled'}>选课</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    window.handleEnroll = async (teachingClassId) => {
+        if (!teachingClassId) {
+            Utils.showToast('选课失败：teachingClassId 为空（前端字段未对齐）', 'error');
+            return;
+        }
+        if (!confirm('确定要选择这门课程吗？')) return;
+        try {
+            const res = await API.enrollCourse(teachingClassId);
+            if (res.code === 200) {
+                Utils.showToast('选课成功', 'success');
+                // 刷新两个tab的数据
+                loadAvailableCourses();
+                loadEnrollments();
+            } else {
+                Utils.showToast(res.message, 'error');
+            }
+        } catch (error) {
+            Utils.showToast('选课失败', 'error');
+        }
+    };
 
     // --- Feature: My Scores ---
     async function loadScores() {

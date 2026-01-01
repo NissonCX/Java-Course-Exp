@@ -34,6 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (viewId === 'classes') loadClasses();
         if (viewId === 'analysis') setupAnalysisDropdown();
+        if (viewId === 'profile') loadProfile();
     }
 
     function updateNav(activeItem) {
@@ -43,6 +44,43 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Load Data
     loadClasses();
+
+    // --- Feature: Profile ---
+    async function loadProfile() {
+        showLoading(true);
+        try {
+            const res = await API.getTeacherProfile();
+            if (res.code === 200) {
+                const t = res.data;
+                document.getElementById('profileTeacherNo').value = t.teacherNo || '';
+                document.getElementById('profileName').value = t.name || '';
+                document.getElementById('profileEmail').value = t.email || '';
+                document.getElementById('profilePhone').value = t.phone || '';
+            }
+        } catch (error) {
+            Utils.showToast('加载个人信息失败', 'error');
+        } finally {
+            showLoading(false);
+        }
+    }
+
+    document.getElementById('profileForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const data = {
+            email: document.getElementById('profileEmail').value,
+            phone: document.getElementById('profilePhone').value
+        };
+        try {
+            const res = await API.updateTeacherProfile(data);
+            if (res.code === 200) {
+                Utils.showToast('更新成功', 'success');
+            } else {
+                Utils.showToast(res.message, 'error');
+            }
+        } catch (error) {
+            Utils.showToast('更新失败', 'error');
+        }
+    });
 
     // --- Feature: Class List ---
     async function loadClasses() {
@@ -104,9 +142,51 @@ document.addEventListener('DOMContentLoaded', () => {
         showLoading(false);
     }
 
+    // Batch Save Handler
+    document.getElementById('saveAllScoresBtn').addEventListener('click', async () => {
+        if (!currentClassId) return;
+
+        const rows = document.querySelectorAll('#scoreInputTable tbody tr');
+        const scores = [];
+
+        rows.forEach(tr => {
+            const studentId = tr.dataset.studentId;
+            if (studentId) {
+                scores.push({
+                    studentId: parseInt(studentId),
+                    usualScore: val(tr, 'usual'),
+                    midtermScore: val(tr, 'midterm'),
+                    experimentScore: val(tr, 'experiment'),
+                    finalScore: val(tr, 'final')
+                });
+            }
+        });
+
+        if (scores.length === 0) {
+            Utils.showToast('没有可保存的数据', 'info');
+            return;
+        }
+
+        showLoading(true);
+        try {
+            const res = await API.batchInputScores(currentClassId, scores);
+            if (res.code === 200) {
+                Utils.showToast('批量保存成功', 'success');
+                loadClassScores(currentClassId);
+                loadClassStats(currentClassId);
+            } else {
+                Utils.showToast(res.message, 'error');
+            }
+        } catch (e) {
+            Utils.showToast('批量保存失败', 'error');
+        } finally {
+            showLoading(false);
+        }
+    });
+
     async function loadClassScores(classId) {
         try {
-            const res = await API.getClassScores(classId);
+            const res = await API.getClassStudents(classId);
             if (res.code === 200) {
                 renderScoreTable(res.data);
             }
@@ -133,20 +213,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function renderScoreTable(scores) {
+    function renderScoreTable(students) {
         const tbody = document.querySelector('#scoreInputTable tbody');
         tbody.innerHTML = '';
 
-        if(!scores || scores.length === 0) {
+        if(!students || students.length === 0) {
             tbody.innerHTML = '<tr><td colspan="8" style="text-align:center">暂无学生数据</td></tr>';
             return;
         }
 
-        scores.forEach(s => {
+        students.forEach(s => {
             const tr = document.createElement('tr');
-            tr.dataset.studentId = s.student?.id || s.studentId;
-            const studentNo = s.student?.studentNo || '-';
-            const studentName = s.student?.name || '-';
+            // getClassStudents 返回的数据结构中 studentId 字段直接在顶层
+            tr.dataset.studentId = s.studentId;
+            // 使用 studentNo 和 studentName 字段，而不是 student 对象
+            const studentNo = s.studentNo || '-';
+            const studentName = s.studentName || '-';
             tr.innerHTML = `
                 <td>${studentNo}</td>
                 <td>${studentName}</td>
