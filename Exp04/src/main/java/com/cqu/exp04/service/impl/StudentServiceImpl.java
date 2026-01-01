@@ -214,17 +214,22 @@ public class StudentServiceImpl implements StudentService {
         TeachingClass teachingClass = teachingClassMapper.findByIdWithDetails(teachingClassId)
                 .orElseThrow(() -> new RuntimeException("教学班不存在"));
 
-        // 2. 检查是否已选课
+        // 2. 检查教学班是否允许选课（只允许“未开课”状态选课）
+        if (!teachingClass.isSelectableForEnrollment()) {
+            throw new RuntimeException("该教学班" + teachingClass.getStatusText() + "，当前不允许选课");
+        }
+
+        // 3. 检查是否已选课
         if (enrollmentMapper.findByStudentAndClass(studentId, teachingClassId).isPresent()) {
             throw new RuntimeException("您已经选过这门课了");
         }
 
-        // 3. 检查教学班是否已满
+        // 4. 检查教学班是否已满
         if (teachingClass.getCurrentStudents() >= teachingClass.getMaxStudents()) {
             throw new RuntimeException("教学班已满,无法选课");
         }
 
-        // 4. 创建选课记录
+        // 5. 创建选课记录
         Enrollment enrollment = Enrollment.builder()
                 .studentId(studentId)
                 .teachingClassId(teachingClassId)
@@ -233,11 +238,11 @@ public class StudentServiceImpl implements StudentService {
                 .build();
         enrollmentMapper.insert(enrollment);
 
-        // 5. 更新教学班当前人数
-        teachingClassMapper.updateCurrentStudents(
-                teachingClassId,
-                teachingClass.getCurrentStudents() + 1
-        );
+        // 5. 更新教学班当前人数（并发安全：未满员才 +1）
+        int updated = teachingClassMapper.incrementCurrentStudentsIfNotFull(teachingClassId);
+        if (updated != 1) {
+            throw new RuntimeException("教学班已满,无法选课");
+        }
     }
 
     @Override
@@ -264,6 +269,10 @@ public class StudentServiceImpl implements StudentService {
                 map.put("schedule", teachingClass.getSchedule());
                 map.put("enrollTime", enrollment.getEnrollTime());
                 map.put("status", enrollment.getStatus());
+
+                // 返回教学班状态，便于前端判断是否允许退课
+                map.put("teachingClassStatus", teachingClass.getStatus());
+                map.put("teachingClassStatusText", teachingClass.getStatusText());
 
                 // 查询是否有成绩
                 scoreMapper.findByEnrollmentId(enrollment.getId()).ifPresent(score -> {
@@ -302,10 +311,15 @@ public class StudentServiceImpl implements StudentService {
         TeachingClass teachingClass = teachingClassMapper.findByIdWithDetails(enrollment.getTeachingClassId())
                 .orElseThrow(() -> new RuntimeException("教学班不存在"));
 
-        // 5. 删除选课记录
+        // 5. 已开课/已结课 不允许退课（只允许“未开课”退课）
+        if (!teachingClass.isSelectableForEnrollment()) {
+            throw new RuntimeException("该教学班" + teachingClass.getStatusText() + "，当前不允许退课");
+        }
+
+        // 6. 删除选课记录
         enrollmentMapper.deleteById(enrollmentId);
 
-        // 6. 更新教学班当前人数
+        // 7. 更新教学班当前人数
         teachingClassMapper.updateCurrentStudents(
                 enrollment.getTeachingClassId(),
                 teachingClass.getCurrentStudents() - 1

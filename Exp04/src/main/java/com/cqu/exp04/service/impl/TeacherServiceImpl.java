@@ -245,6 +245,38 @@ public class TeacherServiceImpl implements TeacherService {
 
     @Override
     @Transactional
+    public void updateTeachingClassStatus(Long teacherId, Long teachingClassId, Integer status) {
+        // 1. 参数校验
+        if (status == null || !(status == TeachingClass.STATUS_NOT_STARTED
+                || status == TeachingClass.STATUS_IN_PROGRESS
+                || status == TeachingClass.STATUS_FINISHED)) {
+            throw new RuntimeException("无效的教学班状态");
+        }
+
+        // 2. 验证权限
+        TeachingClass teachingClass = teachingClassMapper.findByIdWithDetails(teachingClassId)
+                .orElseThrow(() -> new RuntimeException("教学班不存在"));
+
+        if (!teachingClass.getTeacherId().equals(teacherId)) {
+            throw new RuntimeException("无权限操作此教学班");
+        }
+
+        // 3. 状态流转约束：已结课不可重新开课
+        Integer currentStatus = teachingClass.getStatus();
+        if (currentStatus != null && currentStatus == TeachingClass.STATUS_FINISHED
+                && status != TeachingClass.STATUS_FINISHED) {
+            throw new RuntimeException("已结课的教学班不可重新开课");
+        }
+
+        // 4. 执行更新
+        TeachingClass update = new TeachingClass();
+        update.setId(teachingClassId);
+        update.setStatus(status);
+        teachingClassMapper.update(update);
+    }
+
+    @Override
+    @Transactional
     public void updateProfile(Long teacherId, Teacher teacher) {
         // 1. 验证教师是否存在
         Teacher existingTeacher = teacherMapper.findById(teacherId)

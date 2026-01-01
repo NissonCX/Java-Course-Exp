@@ -6,6 +6,7 @@
     <title>学生端 - 学生成绩管理系统</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/dashboard.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         .tab-header {
             display: flex;
@@ -31,6 +32,38 @@
         .tab-content.active {
             display: block;
         }
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin-top: 20px;
+        }
+        .report-section {
+            margin-top: 2rem;
+        }
+        .report-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        .chart-card {
+            background: var(--surface-color);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            transition: var(--transition);
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow-sm);
+        }
+        .chart-card:hover {
+            box-shadow: var(--shadow-md);
+        }
+        .chart-card h4 {
+            margin: 0 0 var(--spacing-md) 0;
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 1rem;
+        }
     </style>
 </head>
 <body>
@@ -42,6 +75,7 @@
                     <div class="user-name" id="userName">Student Name</div>
                     <div class="user-role">学生</div>
                 </div>
+                <button class="btn btn-outline" id="themeToggleBtn" type="button" data-theme-toggle>暗色</button>
                 <button class="btn btn-outline" id="logoutBtn">退出</button>
             </div>
         </div>
@@ -118,6 +152,25 @@
                         </table>
                     </div>
                 </div>
+                
+                <!-- Report Section -->
+                <div class="report-section">
+                    <h3 style="margin-bottom: var(--spacing-md);">成绩分析报表</h3>
+                    <div class="chart-container">
+                        <canvas id="scoresChart"></canvas>
+                    </div>
+                    
+                    <div class="report-grid">
+                        <div class="chart-card">
+                            <h4>学科能力雷达图</h4>
+                            <canvas id="subjectDistributionChart" style="max-height: 300px;"></canvas>
+                        </div>
+                        <div class="chart-card">
+                            <h4>成绩等级统计</h4>
+                            <canvas id="gradeDistributionChart" style="max-height: 300px;"></canvas>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- View: Course Management -->
@@ -168,6 +221,7 @@
                                         <th>课程名称</th>
                                         <th>授课教师</th>
                                         <th>学期</th>
+                                        <th>状态</th>
                                         <th>已选/容量</th>
                                         <th>操作</th>
                                     </tr>

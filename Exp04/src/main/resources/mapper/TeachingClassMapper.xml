@@ -113,6 +113,13 @@
         WHERE id = #{id}
     </update>
 
+    <update id="incrementCurrentStudentsIfNotFull">
+        UPDATE teaching_class
+        SET current_students = current_students + 1
+        WHERE id = #{id}
+          AND current_students &lt; max_students
+    </update>
+
     <delete id="deleteById">
         DELETE FROM teaching_class WHERE id = #{id}
     </delete>

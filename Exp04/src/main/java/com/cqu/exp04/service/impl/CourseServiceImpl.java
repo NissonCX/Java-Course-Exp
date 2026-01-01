@@ -38,7 +38,7 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public List<Map<String, Object>> getAvailableClasses(String semester) {
-        // 获取所有教学班
+        // 获取所有教学班（用于“选课大厅”展示；是否可选由 canEnroll 决定）
         List<TeachingClass> allClasses = teachingClassMapper.findAll();
 
         // 过滤指定学期的教学班(如果提供了学期参数)
@@ -70,6 +70,14 @@ public class CourseServiceImpl implements CourseService {
                     map.put("currentStudents", tc.getCurrentStudents());
                     map.put("availableSeats", tc.getMaxStudents() - tc.getCurrentStudents());
                     map.put("isFull", tc.getCurrentStudents() >= tc.getMaxStudents());
+
+                    // 状态与可选逻辑（后端为准）
+                    map.put("status", tc.getStatus());
+                    map.put("statusText", tc.getStatusText());
+                    boolean canEnroll = tc.isSelectableForEnrollment()
+                            && tc.getCurrentStudents() < tc.getMaxStudents();
+                    map.put("canEnroll", canEnroll);
+
                     return map;
                 })
                 .collect(Collectors.toList());
@@ -117,6 +125,8 @@ public class CourseServiceImpl implements CourseService {
         result.put("currentStudents", teachingClass.getCurrentStudents());
         result.put("availableSeats", teachingClass.getMaxStudents() - teachingClass.getCurrentStudents());
         result.put("isFull", teachingClass.getCurrentStudents() >= teachingClass.getMaxStudents());
+        result.put("status", teachingClass.getStatus());
+        result.put("statusText", teachingClass.getStatusText());
 
         return result;
     }

@@ -96,6 +96,22 @@ public class TeacherController {
     }
 
     /**
+     * 更新教学班状态（未开课/已开课/已结课）
+     */
+    @PutMapping("/class/{classId}/status")
+    public Result<String> updateClassStatus(@PathVariable Long classId,
+                                            @Valid @RequestBody com.cqu.exp04.dto.TeachingClassStatusUpdateRequest body,
+                                            HttpServletRequest request) {
+        try {
+            Long teacherId = (Long) request.getAttribute("roleId");
+            teacherService.updateTeachingClassStatus(teacherId, classId, body.getStatus());
+            return Result.success("状态更新成功", null);
+        } catch (Exception e) {
+            return Result.error(e.getMessage());
+        }
+    }
+
+    /**
      * 查询教学班学生成绩列表
      */
     @GetMapping("/class/{classId}/scores")

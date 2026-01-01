@@ -54,6 +54,11 @@ public interface TeachingClassMapper {
     int updateCurrentStudents(@Param("id") Long id, @Param("currentStudents") Integer currentStudents);
 
     /**
+     * 学生数 +1（若未满员则更新成功；用于并发选课防超额）
+     */
+    int incrementCurrentStudentsIfNotFull(@Param("id") Long id);
+
+    /**
      * 删除教学班
      */
     int deleteById(@Param("id") Long id);

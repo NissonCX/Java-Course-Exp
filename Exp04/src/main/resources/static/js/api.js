@@ -164,5 +164,12 @@ const API = {
             method: 'POST',
             body: JSON.stringify({ teachingClassId, message })
         });
+    },
+
+    updateTeachingClassStatus: (classId, status) => {
+        return API.request(`/teacher/class/${classId}/status`, {
+            method: 'PUT',
+            body: JSON.stringify({ status })
+        });
     }
 };

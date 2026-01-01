@@ -1,11 +1,84 @@
 /* Dashboard specific styles */
 
+/* Dark theme overrides for dashboard widgets */
+html[data-theme="dark"] .chat-container {
+    background-color: var(--surface-muted);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.35);
+}
+
+html[data-theme="dark"] .message.ai {
+    background-color: var(--surface-color);
+    color: var(--text-secondary);
+    border-color: var(--border-color);
+}
+
+html[data-theme="dark"] .chat-input-area {
+    background-color: var(--surface-color);
+}
+
+html[data-theme="dark"] .chat-input {
+    background-color: var(--surface-color);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+}
+
+html[data-theme="dark"] .chat-input::placeholder {
+    color: var(--text-tertiary);
+}
+
+html[data-theme="dark"] .message h1,
+html[data-theme="dark"] .message h2,
+html[data-theme="dark"] .message h3,
+html[data-theme="dark"] .message h4,
+html[data-theme="dark"] .message strong {
+    color: var(--text-primary);
+}
+
+html[data-theme="dark"] .message li::marker {
+    color: var(--text-tertiary);
+}
+
+html[data-theme="dark"] .message code {
+    background-color: rgba(255, 255, 255, 0.08);
+    color: var(--text-primary);
+}
+
+html[data-theme="dark"] .message blockquote {
+    border-left-color: var(--border-color);
+    color: var(--text-secondary);
+}
+
+html[data-theme="dark"] .message table,
+html[data-theme="dark"] .message th,
+html[data-theme="dark"] .message td {
+    border-color: var(--border-color);
+}
+
+html[data-theme="dark"] .message th {
+    background-color: rgba(255, 255, 255, 0.04);
+    color: var(--text-secondary);
+}
+
+html[data-theme="dark"] .message tr:nth-child(even) {
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+html[data-theme="dark"] .stat-card,
+html[data-theme="dark"] .course-card,
+html[data-theme="dark"] .chart-card {
+    background: var(--surface-color);
+}
+
+html[data-theme="dark"] .course-header {
+    background-color: var(--surface-muted);
+}
+
 /* AI Chat Interface */
 .chat-container {
     display: flex;
     flex-direction: column;
     height: 600px; /* 增加高度 */
-    background-color: #f8fafc; /* 浅灰背景 */
+    background-color: var(--table-header-bg); /* 浅色主题用浅灰，暗色由变量接管 */
     border: 1px solid var(--border-color);
     border-radius: var(--radius-lg);
     overflow: hidden;
@@ -182,7 +255,7 @@
     border-top: 1px solid var(--border-color);
     display: flex;
     gap: 0.75rem;
-    background-color: white;
+    background-color: var(--surface-color);
 }
 
 .chat-input {
@@ -211,7 +284,7 @@
 }
 
 .stat-card {
-    background: white;
+    background: var(--surface-color);
     padding: var(--spacing-lg);
     border-radius: var(--radius-lg);
     border: 1px solid var(--border-color);
@@ -247,7 +320,7 @@
 }
 
 .course-card {
-    background: white;
+    background: var(--surface-color);
     border-radius: var(--radius-lg);
     border: 1px solid var(--border-color);
     overflow: hidden;
@@ -260,7 +333,7 @@
 }
 
 .course-header {
-    background-color: #f8fafc;
+    background-color: var(--table-header-bg);
     padding: var(--spacing-md);
     border-bottom: 1px solid var(--border-color);
 }

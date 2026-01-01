@@ -67,6 +67,11 @@ public interface TeacherService {
     String aiConsult(Long teacherId, Long teachingClassId, String message);
 
     /**
+     * 更新教学班状态（未开课/已开课/已结课）
+     */
+    void updateTeachingClassStatus(Long teacherId, Long teachingClassId, Integer status);
+
+    /**
      * 更新教师信息
      */
     void updateProfile(Long teacherId, Teacher teacher);

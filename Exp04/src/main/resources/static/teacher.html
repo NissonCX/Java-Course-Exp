@@ -6,6 +6,7 @@
     <title>教师端 - 学生成绩管理系统</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/dashboard.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         .input-score {
             width: 60px;
@@ -21,10 +22,44 @@
             margin-bottom: 0.5rem;
         }
         .tag {
-            background-color: #e2e8f0;
+            background-color: var(--surface-muted);
             padding: 2px 8px;
             border-radius: 4px;
             font-size: 0.75rem;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+        }
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin-top: 20px;
+        }
+        .report-section {
+            margin-top: 2rem;
+        }
+        .report-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        .chart-card {
+            background: var(--surface-color);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            transition: var(--transition);
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow-sm);
+        }
+        .chart-card:hover {
+            box-shadow: var(--shadow-md);
+        }
+        .chart-card h4 {
+            margin: 0 0 var(--spacing-md) 0;
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 1rem;
         }
     </style>
 </head>
@@ -37,6 +72,7 @@
                     <div class="user-name" id="userName">Teacher Name</div>
                     <div class="user-role">教师</div>
                 </div>
+                <button class="btn btn-outline" id="themeToggleBtn" type="button" data-theme-toggle>暗色</button>
                 <button class="btn btn-outline" id="logoutBtn">退出</button>
             </div>
         </div>
@@ -73,9 +109,18 @@
 
             <!-- View: Class Detail (Modal-like full view) -->
             <div id="view-class-detail" class="view-section" style="display: none;">
-                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap;">
                     <button class="btn btn-outline" id="backToClassesBtn">← 返回列表</button>
                     <h2 id="currentClassName">班级详情</h2>
+                    <div style="margin-left: auto; display: flex; align-items: center; gap: 0.5rem;" id="classStatusActions">
+                        <span style="color: var(--text-secondary); font-size: 0.9rem;">教学班状态</span>
+                        <select id="classStatusSelect" class="form-control" style="max-width: 180px;" onclick="event.stopPropagation()">
+                            <option value="1">未开课（可选课）</option>
+                            <option value="2">已开课（不可选课）</option>
+                            <option value="0">已结课（不可选课）</option>
+                        </select>
+                        <button class="btn btn-primary" id="classStatusSaveBtn" onclick="event.stopPropagation()">更新状态</button>
+                    </div>
                 </div>
 
                 <!-- Stats Summary -->
@@ -106,6 +151,25 @@
                                 <!-- Students loaded here -->
                             </tbody>
                         </table>
+                    </div>
+                </div>
+                
+                <!-- Report Section -->
+                <div class="report-section">
+                    <h3 style="margin-bottom: var(--spacing-md);">班级成绩分析报表</h3>
+                    <div class="chart-container">
+                        <canvas id="classScoresChart"></canvas>
+                    </div>
+                    
+                    <div class="report-grid">
+                        <div class="chart-card">
+                            <h4>成绩等级分布</h4>
+                            <canvas id="gradeDistributionChart" style="max-height: 300px;"></canvas>
+                        </div>
+                        <div class="chart-card">
+                            <h4>各项成绩平均分雷达图</h4>
+                            <canvas id="scoreStatsChart" style="max-height: 300px;"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>

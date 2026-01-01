@@ -39,33 +39,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Tab Handler for Course Management
-    const tabs = document.querySelectorAll('.tab-item');
-    const tabContents = document.querySelectorAll('.tab-content');
-
-    tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            // Update Tabs
-            tabs.forEach(t => t.classList.remove('active'));
-            tab.classList.add('active');
-
-            // Update Content
-            const target = tab.dataset.tab;
-            tabContents.forEach(c => {
-                c.classList.remove('active');
-                if (c.id === `tab-${target}`) {
-                    c.classList.add('active');
-                }
-            });
-
-            // Load Data
-            if (target === 'enrollments') loadEnrollments();
-            if (target === 'selection') loadAvailableCourses();
-        });
-    });
-
     // Initial Load
     loadScores();
+
+    // Chart instances
+    let scoresChart = null;
+    let subjectDistributionChart = null;
+    let gradeDistributionChart = null;
 
     function loadCourseManage() {
         // Default to enrollments tab
@@ -76,6 +56,32 @@ document.addEventListener('DOMContentLoaded', () => {
             loadEnrollments();
         }
     }
+
+    // Tabs inside "选课管理" view
+    const courseManageTabItems = document.querySelectorAll('#view-course-manage .tab-item');
+    const courseManageTabContents = document.querySelectorAll('#view-course-manage .tab-content');
+
+    courseManageTabItems.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const tabKey = tab.dataset.tab;
+
+            // Switch active tab header
+            courseManageTabItems.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+
+            // Switch active tab content
+            courseManageTabContents.forEach(content => {
+                content.classList.toggle('active', content.id === `tab-${tabKey}`);
+            });
+
+            // Load data for the selected tab
+            if (tabKey === 'selection') {
+                loadAvailableCourses();
+            } else {
+                loadEnrollments();
+            }
+        });
+    });
 
     // --- Feature: Profile ---
     async function loadProfile() {
@@ -138,21 +144,28 @@ document.addEventListener('DOMContentLoaded', () => {
         tbody.innerHTML = '';
 
         if (!list || list.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center">暂无可选课程</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center">暂无可选课程</td></tr>';
             return;
         }
 
         list.forEach(item => {
             const tr = document.createElement('tr');
             const teachingClassId = item.teachingClassId ?? item.id;
+
+            // 后端现在会返回所有教学班：以前端展示为主，能否选课以 canEnroll 为准
+            const status = item.status ?? 1;
+            const statusText = item.statusText || (status === 1 ? '未开课' : status === 2 ? '已开课' : '已结课');
+            const canEnroll = Boolean(item.canEnroll) && Boolean(teachingClassId);
+
             tr.innerHTML = `
                 <td>${item.classNo || '-'}</td>
                 <td>${item.courseName || '-'}</td>
                 <td>${item.teacherName || '-'}</td>
                 <td>${item.semester || '-'}</td>
+                <td><span class="score-badge score-mid">${statusText}</span></td>
                 <td>${item.currentStudents || 0} / ${item.maxStudents || 0}</td>
                 <td>
-                    <button class="btn btn-primary btn-sm" onclick="handleEnroll(${teachingClassId})" ${teachingClassId ? '' : 'disabled'}>选课</button>
+                    <button class="btn btn-primary btn-sm" onclick="handleEnroll(${teachingClassId})" ${canEnroll ? '' : 'disabled'}>${canEnroll ? '选课' : '不可选'}</button>
                 </td>
             `;
             tbody.appendChild(tr);
@@ -188,6 +201,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (res.code === 200) {
                 renderStats(res.data);
                 renderScoresTable(res.data.scores);
+                // Generate charts after data is loaded
+                generateCharts(res.data.scores);
             } else {
                 Utils.showToast(res.message, 'error');
             }
@@ -231,6 +246,227 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // --- Feature: Charts ---
+    function generateCharts(scores) {
+        // Filter scores with total score
+        const validScores = scores.filter(s => s.totalScore !== null && s.totalScore !== undefined);
+        
+        if (validScores.length === 0) {
+            // Clear charts if no data
+            if (scoresChart) {
+                scoresChart.destroy();
+                scoresChart = null;
+            }
+            if (subjectDistributionChart) {
+                subjectDistributionChart.destroy();
+                subjectDistributionChart = null;
+            }
+            if (gradeDistributionChart) {
+                gradeDistributionChart.destroy();
+                gradeDistributionChart = null;
+            }
+            return;
+        }
+
+        // Common chart options
+        Chart.defaults.font.family = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+        Chart.defaults.color = '#64748b';
+
+        // 1. 柱状图 - 各科目总评成绩
+        const ctx1 = document.getElementById('scoresChart').getContext('2d');
+        if (scoresChart) {
+            scoresChart.destroy();
+        }
+        
+        scoresChart = new Chart(ctx1, {
+            type: 'bar',
+            data: {
+                labels: validScores.map(s => s.courseName),
+                datasets: [{
+                    label: '总评成绩',
+                    data: validScores.map(s => s.totalScore),
+                    backgroundColor: validScores.map(s => {
+                        if (s.totalScore >= 90) return 'rgba(34, 197, 94, 0.8)'; // Green-500
+                        if (s.totalScore >= 80) return 'rgba(59, 130, 246, 0.8)'; // Blue-500
+                        if (s.totalScore >= 60) return 'rgba(245, 158, 11, 0.8)'; // Amber-500
+                        return 'rgba(239, 68, 68, 0.8)'; // Red-500
+                    }),
+                    borderRadius: 6,
+                    borderSkipped: false,
+                    barPercentage: 0.6,
+                    categoryPercentage: 0.8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    title: {
+                        display: true,
+                        text: '课程成绩概览',
+                        font: { size: 16, weight: '600' },
+                        color: '#1e293b',
+                        padding: { bottom: 20 }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                        padding: 12,
+                        cornerRadius: 8,
+                        callbacks: {
+                            label: (ctx) => `成绩: ${ctx.parsed.y}分`
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        grid: {
+                            color: '#f1f5f9',
+                            drawBorder: false
+                        },
+                        ticks: { font: { size: 11 } }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { font: { size: 11 } }
+                    }
+                },
+                animation: {
+                    duration: 1000,
+                    easing: 'easeOutQuart'
+                }
+            }
+        });
+
+        // 2. 雷达图 - 学科能力分析 (替代原来的饼图)
+        const ctx2 = document.getElementById('subjectDistributionChart').getContext('2d');
+        if (subjectDistributionChart) {
+            subjectDistributionChart.destroy();
+        }
+
+        subjectDistributionChart = new Chart(ctx2, {
+            type: 'radar',
+            data: {
+                labels: validScores.map(s => s.courseName),
+                datasets: [{
+                    label: '成绩',
+                    data: validScores.map(s => s.totalScore),
+                    backgroundColor: 'rgba(99, 102, 241, 0.2)', // Indigo-500 with opacity
+                    borderColor: '#6366f1', // Indigo-500
+                    pointBackgroundColor: '#6366f1',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: '#6366f1',
+                    borderWidth: 2,
+                    pointRadius: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        angleLines: { color: '#e2e8f0' },
+                        grid: { color: '#e2e8f0' },
+                        pointLabels: {
+                            font: { size: 11 },
+                            color: '#475569'
+                        },
+                        suggestedMin: 0,
+                        suggestedMax: 100,
+                        ticks: { display: false, stepSize: 20 }
+                    }
+                },
+                plugins: {
+                    legend: { display: false },
+                    title: {
+                        display: true,
+                        text: '学科能力雷达图',
+                        font: { size: 16, weight: '600' },
+                        color: '#1e293b',
+                        padding: { bottom: 10 }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                        padding: 10,
+                        cornerRadius: 6
+                    }
+                }
+            }
+        });
+
+        // 3. 环形图 - 成绩等级分布
+        const excellentCount = validScores.filter(s => s.totalScore >= 90).length;
+        const goodCount = validScores.filter(s => s.totalScore >= 80 && s.totalScore < 90).length;
+        const passCount = validScores.filter(s => s.totalScore >= 60 && s.totalScore < 80).length;
+        const failCount = validScores.filter(s => s.totalScore < 60).length;
+
+        const ctx3 = document.getElementById('gradeDistributionChart').getContext('2d');
+        if (gradeDistributionChart) {
+            gradeDistributionChart.destroy();
+        }
+
+        gradeDistributionChart = new Chart(ctx3, {
+            type: 'doughnut',
+            data: {
+                labels: ['优秀 (90+)', '良好 (80-89)', '及格 (60-79)', '不及格 (<60)'],
+                datasets: [{
+                    data: [excellentCount, goodCount, passCount, failCount],
+                    backgroundColor: [
+                        '#22c55e', // Green-500
+                        '#3b82f6', // Blue-500
+                        '#f59e0b', // Amber-500
+                        '#ef4444'  // Red-500
+                    ],
+                    borderWidth: 0,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 15,
+                            font: { size: 11 },
+                            boxWidth: 8
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: '成绩等级分布',
+                        font: { size: 16, weight: '600' },
+                        color: '#1e293b',
+                        padding: { bottom: 10 }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                        padding: 10,
+                        cornerRadius: 6,
+                        callbacks: {
+                            label: function(context) {
+                                const value = context.parsed;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = total ? ((value / total) * 100).toFixed(1) + '%' : '0%';
+                                return ` ${context.label}: ${value}门 (${percentage})`;
+                            }
+                        }
+                    }
+                },
+                animation: {
+                    duration: 1000,
+                    easing: 'easeOutQuart'
+                }
+            }
+        });
+    }
+
     // --- Feature: Enrollments ---
     async function loadEnrollments() {
         showLoading(true);
@@ -259,14 +495,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
         list.forEach(item => {
             const tr = document.createElement('tr');
+
+            const status = item.teachingClassStatus ?? 1;
+            const statusText = item.teachingClassStatusText || (status === 1 ? '未开课' : status === 2 ? '已开课' : '已结课');
+            const canDrop = status === 1 && !item.hasScore;
+
             tr.innerHTML = `
                 <td>${item.classNo || '-'}</td>
                 <td>${item.courseName || '-'}</td>
                 <td>${item.teacherName || '-'}</td>
                 <td>${item.semester || '-'}</td>
-                <td><span class="score-badge score-mid">已选</span></td>
+                <td><span class="score-badge score-mid">${statusText}</span></td>
                 <td>
-                    <button class="btn btn-danger btn-sm" onclick="handleDropCourse(${item.enrollmentId})">退课</button>
+                    <button class="btn btn-danger btn-sm" onclick="handleDropCourse(${item.enrollmentId})" ${canDrop ? '' : 'disabled'}>${canDrop ? '退课' : (item.hasScore ? '已出分' : '不可退')}</button>
                 </td>
             `;
             tbody.appendChild(tr);
@@ -342,7 +583,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Create AI message div that will be updated
         const aiMessageDiv = document.createElement('div');
-        aiMessageDiv.className = 'message ai';
+        aiMessageDiv.className = 'message.ai';
         aiMessageDiv.innerHTML = '';
         chatMessages.appendChild(aiMessageDiv);
         chatMessages.scrollTop = chatMessages.scrollHeight;
