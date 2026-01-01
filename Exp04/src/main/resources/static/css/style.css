@@ -286,15 +286,6 @@ tr:last-child td {
 tr:hover td {
     background-color: var(--row-hover-bg);
 }
-    background-color: #f1f5f9;
-    font-weight: 600;
-    font-size: var(--font-size-sm);
-    color: var(--text-secondary);
-}
-
-tr:last-child td {
-    border-bottom: none;
-}
 
 /* Loading Spinner */
 .spinner {
