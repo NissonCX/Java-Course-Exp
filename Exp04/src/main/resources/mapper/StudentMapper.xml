@@ -38,16 +38,6 @@
         SELECT * FROM student WHERE major = #{major} ORDER BY student_no
     </select>
 
-    <insert id="insert" parameterType="com.cqu.exp04.entity.Student" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO student (
-            student_no, user_id, name, gender, birth_date,
-            major, class_name, grade, enrollment_year
-        ) VALUES (
-            #{studentNo}, #{userId}, #{name}, #{gender}, #{birthDate},
-            #{major}, #{className}, #{grade}, #{enrollmentYear}
-        )
-    </insert>
-
     <insert id="batchInsert">
         INSERT INTO student (
             student_no, user_id, name, gender, birth_date,
@@ -58,23 +48,5 @@
              #{item.major}, #{item.className}, #{item.grade}, #{item.enrollmentYear})
         </foreach>
     </insert>
-
-    <update id="update" parameterType="com.cqu.exp04.entity.Student">
-        UPDATE student
-        <set>
-            <if test="name != null">name = #{name},</if>
-            <if test="gender != null">gender = #{gender},</if>
-            <if test="birthDate != null">birth_date = #{birthDate},</if>
-            <if test="major != null">major = #{major},</if>
-            <if test="className != null">class_name = #{className},</if>
-            <if test="grade != null">grade = #{grade},</if>
-            <if test="enrollmentYear != null">enrollment_year = #{enrollmentYear},</if>
-        </set>
-        WHERE id = #{id}
-    </update>
-
-    <delete id="deleteById">
-        DELETE FROM student WHERE id = #{id}
-    </delete>
 
 </mapper>

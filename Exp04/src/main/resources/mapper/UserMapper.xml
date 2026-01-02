@@ -24,23 +24,6 @@
         SELECT * FROM user WHERE id = #{id}
     </select>
 
-    <insert id="insert" parameterType="com.cqu.exp04.entity.User" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO user (username, password, role, real_name, email, phone, status)
-        VALUES (#{username}, #{password}, #{role}, #{realName}, #{email}, #{phone}, #{status})
-    </insert>
-
-    <update id="update" parameterType="com.cqu.exp04.entity.User">
-        UPDATE user
-        <set>
-            <if test="password != null">password = #{password},</if>
-            <if test="realName != null">real_name = #{realName},</if>
-            <if test="email != null">email = #{email},</if>
-            <if test="phone != null">phone = #{phone},</if>
-            <if test="status != null">status = #{status},</if>
-        </set>
-        WHERE id = #{id}
-    </update>
-
     <delete id="deleteById">
         DELETE FROM user WHERE id = #{id}
     </delete>

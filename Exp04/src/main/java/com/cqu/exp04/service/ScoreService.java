@@ -98,7 +98,7 @@ public class ScoreService {
         if (score.getId() == null) {
             scoreMapper.insert(score);
         } else {
-            scoreMapper.update(score);
+            scoreMapper.updateById(score);
         }
     }
 

@@ -123,22 +123,6 @@
         ORDER BY s.total_score DESC
     </select>
 
-    <insert id="insert" parameterType="com.cqu.exp04.entity.Score" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO score (
-            enrollment_id, student_id, teaching_class_id,
-            usual_score, midterm_score, experiment_score, final_score,
-            total_score, grade_point,
-            usual_score_time, midterm_score_time, experiment_score_time,
-            final_score_time, total_score_time
-        ) VALUES (
-            #{enrollmentId}, #{studentId}, #{teachingClassId},
-            #{usualScore}, #{midtermScore}, #{experimentScore}, #{finalScore},
-            #{totalScore}, #{gradePoint},
-            #{usualScoreTime}, #{midtermScoreTime}, #{experimentScoreTime},
-            #{finalScoreTime}, #{totalScoreTime}
-        )
-    </insert>
-
     <insert id="batchInsert">
         INSERT INTO score (
             enrollment_id, student_id, teaching_class_id,
@@ -155,28 +139,6 @@
              #{item.finalScoreTime}, #{item.totalScoreTime})
         </foreach>
     </insert>
-
-    <update id="update" parameterType="com.cqu.exp04.entity.Score">
-        UPDATE score
-        <set>
-            <if test="usualScore != null">usual_score = #{usualScore},</if>
-            <if test="midtermScore != null">midterm_score = #{midtermScore},</if>
-            <if test="experimentScore != null">experiment_score = #{experimentScore},</if>
-            <if test="finalScore != null">final_score = #{finalScore},</if>
-            <if test="totalScore != null">total_score = #{totalScore},</if>
-            <if test="gradePoint != null">grade_point = #{gradePoint},</if>
-            <if test="usualScoreTime != null">usual_score_time = #{usualScoreTime},</if>
-            <if test="midtermScoreTime != null">midterm_score_time = #{midtermScoreTime},</if>
-            <if test="experimentScoreTime != null">experiment_score_time = #{experimentScoreTime},</if>
-            <if test="finalScoreTime != null">final_score_time = #{finalScoreTime},</if>
-            <if test="totalScoreTime != null">total_score_time = #{totalScoreTime},</if>
-        </set>
-        WHERE id = #{id}
-    </update>
-
-    <delete id="deleteById">
-        DELETE FROM score WHERE id = #{id}
-    </delete>
 
     <select id="calculateStudentAverageScore" resultType="java.lang.Double">
         SELECT AVG(total_score)

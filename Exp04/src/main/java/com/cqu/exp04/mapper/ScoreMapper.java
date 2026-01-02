@@ -1,5 +1,6 @@
 package com.cqu.exp04.mapper;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.cqu.exp04.entity.Score;
 import com.cqu.exp04.vo.StudentScoreVO;
 import org.apache.ibatis.annotations.Mapper;
@@ -12,12 +13,14 @@ import java.util.Optional;
  * 成绩Mapper接口
  */
 @Mapper
-public interface ScoreMapper {
+public interface ScoreMapper extends BaseMapper<Score> {
 
     /**
      * 根据ID查询成绩
      */
-    Optional<Score> findById(@Param("id") Long id);
+    default Optional<Score> findById(@Param("id") Long id) {
+        return Optional.ofNullable(selectById(id));
+    }
 
     /**
      * 根据选课记录ID查询成绩
@@ -45,24 +48,9 @@ public interface ScoreMapper {
     List<Score> findClassScoresWithStudent(@Param("teachingClassId") Long teachingClassId);
 
     /**
-     * 插入成绩
-     */
-    int insert(Score score);
-
-    /**
      * 批量插入成绩
      */
     int batchInsert(@Param("scores") List<Score> scores);
-
-    /**
-     * 更新成绩
-     */
-    int update(Score score);
-
-    /**
-     * 删除成绩
-     */
-    int deleteById(@Param("id") Long id);
 
     /**
      * 计算学生平均分

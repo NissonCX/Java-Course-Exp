@@ -341,12 +341,12 @@ public class StudentServiceImpl implements StudentService {
         existingStudent.setClassName(student.getClassName());
 
         // 3. 执行更新
-        studentMapper.update(existingStudent);
+        studentMapper.updateById(existingStudent);
 
         // 4. 同步更新User表的realName
         User user = userMapper.findById(existingStudent.getUserId())
                 .orElseThrow(() -> new RuntimeException("用户不存在"));
         user.setRealName(student.getName());
-        userMapper.update(user);
+        userMapper.updateById(user);
     }
 }

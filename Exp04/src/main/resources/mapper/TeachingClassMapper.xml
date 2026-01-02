@@ -73,16 +73,6 @@
         ORDER BY tc.semester DESC, c.course_name
     </select>
 
-    <insert id="insert" parameterType="com.cqu.exp04.entity.TeachingClass" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO teaching_class (
-            class_no, course_id, teacher_id, semester,
-            max_students, current_students, classroom, schedule, status
-        ) VALUES (
-            #{classNo}, #{courseId}, #{teacherId}, #{semester},
-            #{maxStudents}, #{currentStudents}, #{classroom}, #{schedule}, #{status}
-        )
-    </insert>
-
     <insert id="batchInsert">
         INSERT INTO teaching_class (
             class_no, course_id, teacher_id, semester,
@@ -93,19 +83,6 @@
              #{item.maxStudents}, #{item.currentStudents}, #{item.classroom}, #{item.schedule}, #{item.status})
         </foreach>
     </insert>
-
-    <update id="update" parameterType="com.cqu.exp04.entity.TeachingClass">
-        UPDATE teaching_class
-        <set>
-            <if test="semester != null">semester = #{semester},</if>
-            <if test="maxStudents != null">max_students = #{maxStudents},</if>
-            <if test="currentStudents != null">current_students = #{currentStudents},</if>
-            <if test="classroom != null">classroom = #{classroom},</if>
-            <if test="schedule != null">schedule = #{schedule},</if>
-            <if test="status != null">status = #{status},</if>
-        </set>
-        WHERE id = #{id}
-    </update>
 
     <update id="updateCurrentStudents">
         UPDATE teaching_class
@@ -119,9 +96,5 @@
         WHERE id = #{id}
           AND current_students &lt; max_students
     </update>
-
-    <delete id="deleteById">
-        DELETE FROM teaching_class WHERE id = #{id}
-    </delete>
 
 </mapper>

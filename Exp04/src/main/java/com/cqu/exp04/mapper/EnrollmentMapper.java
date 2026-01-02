@@ -1,5 +1,6 @@
 package com.cqu.exp04.mapper;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.cqu.exp04.entity.Enrollment;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -11,12 +12,14 @@ import java.util.Optional;
  * 选课记录Mapper接口
  */
 @Mapper
-public interface EnrollmentMapper {
+public interface EnrollmentMapper extends BaseMapper<Enrollment> {
 
     /**
      * 根据ID查询选课记录
      */
-    Optional<Enrollment> findById(@Param("id") Long id);
+    default Optional<Enrollment> findById(@Param("id") Long id) {
+        return Optional.ofNullable(selectById(id));
+    }
 
     /**
      * 根据学生ID查询选课记录
@@ -36,22 +39,7 @@ public interface EnrollmentMapper {
             @Param("teachingClassId") Long teachingClassId);
 
     /**
-     * 插入选课记录
-     */
-    int insert(Enrollment enrollment);
-
-    /**
      * 批量插入选课记录
      */
     int batchInsert(@Param("enrollments") List<Enrollment> enrollments);
-
-    /**
-     * 更新选课记录
-     */
-    int update(Enrollment enrollment);
-
-    /**
-     * 删除选课记录
-     */
-    int deleteById(@Param("id") Long id);
 }

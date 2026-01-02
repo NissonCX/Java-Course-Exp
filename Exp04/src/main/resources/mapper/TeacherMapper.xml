@@ -33,16 +33,6 @@
         SELECT * FROM teacher ORDER BY teacher_no
     </select>
 
-    <insert id="insert" parameterType="com.cqu.exp04.entity.Teacher" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO teacher (
-            teacher_no, user_id, name, gender, title,
-            department, email, phone
-        ) VALUES (
-            #{teacherNo}, #{userId}, #{name}, #{gender}, #{title},
-            #{department}, #{email}, #{phone}
-        )
-    </insert>
-
     <insert id="batchInsert">
         INSERT INTO teacher (
             teacher_no, user_id, name, gender, title,
@@ -53,22 +43,5 @@
              #{item.department}, #{item.email}, #{item.phone})
         </foreach>
     </insert>
-
-    <update id="update" parameterType="com.cqu.exp04.entity.Teacher">
-        UPDATE teacher
-        <set>
-            <if test="name != null">name = #{name},</if>
-            <if test="gender != null">gender = #{gender},</if>
-            <if test="title != null">title = #{title},</if>
-            <if test="department != null">department = #{department},</if>
-            <if test="email != null">email = #{email},</if>
-            <if test="phone != null">phone = #{phone},</if>
-        </set>
-        WHERE id = #{id}
-    </update>
-
-    <delete id="deleteById">
-        DELETE FROM teacher WHERE id = #{id}
-    </delete>
 
 </mapper>

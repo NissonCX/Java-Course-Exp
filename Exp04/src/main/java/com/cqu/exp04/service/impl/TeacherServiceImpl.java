@@ -272,7 +272,7 @@ public class TeacherServiceImpl implements TeacherService {
         TeachingClass update = new TeachingClass();
         update.setId(teachingClassId);
         update.setStatus(status);
-        teachingClassMapper.update(update);
+        teachingClassMapper.updateById(update);
     }
 
     @Override
@@ -291,12 +291,12 @@ public class TeacherServiceImpl implements TeacherService {
         existingTeacher.setPhone(teacher.getPhone());
 
         // 3. 执行更新
-        teacherMapper.update(existingTeacher);
+        teacherMapper.updateById(existingTeacher);
 
         // 4. 同步更新User表的realName
         User user = userMapper.findById(existingTeacher.getUserId())
                 .orElseThrow(() -> new RuntimeException("用户不存在"));
         user.setRealName(teacher.getName());
-        userMapper.update(user);
+        userMapper.updateById(user);
     }
 }

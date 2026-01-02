@@ -1,5 +1,6 @@
 package com.cqu.exp04.mapper;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.cqu.exp04.entity.TeachingClass;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -11,7 +12,7 @@ import java.util.Optional;
  * 教学班Mapper接口
  */
 @Mapper
-public interface TeachingClassMapper {
+public interface TeachingClassMapper extends BaseMapper<TeachingClass> {
 
     /**
      * 根据ID查询教学班(包含课程和教师信息)
@@ -34,21 +35,6 @@ public interface TeachingClassMapper {
     List<TeachingClass> findAll();
 
     /**
-     * 插入教学班
-     */
-    int insert(TeachingClass teachingClass);
-
-    /**
-     * 批量插入教学班
-     */
-    int batchInsert(@Param("classes") List<TeachingClass> classes);
-
-    /**
-     * 更新教学班
-     */
-    int update(TeachingClass teachingClass);
-
-    /**
      * 更新学生数量
      */
     int updateCurrentStudents(@Param("id") Long id, @Param("currentStudents") Integer currentStudents);
@@ -59,7 +45,7 @@ public interface TeachingClassMapper {
     int incrementCurrentStudentsIfNotFull(@Param("id") Long id);
 
     /**
-     * 删除教学班
+     * 批量插入教学班
      */
-    int deleteById(@Param("id") Long id);
+    int batchInsert(@Param("classes") List<TeachingClass> classes);
 }

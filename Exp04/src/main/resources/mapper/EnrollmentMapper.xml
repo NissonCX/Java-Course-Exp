@@ -96,14 +96,6 @@
         WHERE student_id = #{studentId} AND teaching_class_id = #{teachingClassId}
     </select>
 
-    <insert id="insert" parameterType="com.cqu.exp04.entity.Enrollment" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO enrollment (
-            student_id, teaching_class_id, enroll_time, status
-        ) VALUES (
-            #{studentId}, #{teachingClassId}, #{enrollTime}, #{status}
-        )
-    </insert>
-
     <insert id="batchInsert">
         INSERT INTO enrollment (
             student_id, teaching_class_id, enroll_time, status
@@ -112,18 +104,5 @@
             (#{item.studentId}, #{item.teachingClassId}, #{item.enrollTime}, #{item.status})
         </foreach>
     </insert>
-
-    <update id="update" parameterType="com.cqu.exp04.entity.Enrollment">
-        UPDATE enrollment
-        <set>
-            <if test="status != null">status = #{status},</if>
-            <if test="enrollTime != null">enroll_time = #{enrollTime},</if>
-        </set>
-        WHERE id = #{id}
-    </update>
-
-    <delete id="deleteById">
-        DELETE FROM enrollment WHERE id = #{id}
-    </delete>
 
 </mapper>
