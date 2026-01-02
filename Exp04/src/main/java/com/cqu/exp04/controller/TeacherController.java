@@ -5,6 +5,8 @@ import com.cqu.exp04.dto.ScoreInputRequest;
 import com.cqu.exp04.entity.Score;
 import com.cqu.exp04.entity.Teacher;
 import com.cqu.exp04.entity.TeachingClass;
+import com.cqu.exp04.entity.User;
+import com.cqu.exp04.mapper.UserMapper;
 import com.cqu.exp04.security.JwtUtil;
 import com.cqu.exp04.service.AIService;
 import com.cqu.exp04.service.TeacherService;
@@ -17,6 +19,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -36,16 +39,38 @@ public class TeacherController {
 
     @Autowired
     private JwtUtil jwtUtil;
+    
+    @Autowired
+    private UserMapper userMapper;
 
     /**
      * 获取个人信息
      */
     @GetMapping("/profile")
-    public Result<Teacher> getProfile(HttpServletRequest request) {
+    public Result<Map<String, Object>> getProfile(HttpServletRequest request) {
         try {
             Long teacherId = (Long) request.getAttribute("roleId");
             Teacher teacher = teacherService.getById(teacherId);
-            return Result.success(teacher);
+            
+            // 获取对应的用户信息以获取邮箱和电话
+            User user = userMapper.findById(teacher.getUserId())
+                .orElseThrow(() -> new RuntimeException("用户不存在"));
+            
+            // 合并教师和用户信息
+            Map<String, Object> profile = new HashMap<>();
+            profile.put("id", teacher.getId());
+            profile.put("teacherNo", teacher.getTeacherNo());
+            profile.put("userId", teacher.getUserId());
+            profile.put("name", teacher.getName());
+            profile.put("gender", teacher.getGender());
+            profile.put("title", teacher.getTitle());
+            profile.put("department", teacher.getDepartment());
+            profile.put("email", user.getEmail());
+            profile.put("phone", user.getPhone());
+            profile.put("createTime", teacher.getCreateTime());
+            profile.put("updateTime", teacher.getUpdateTime());
+            
+            return Result.success(profile);
         } catch (Exception e) {
             return Result.error(e.getMessage());
         }
@@ -55,11 +80,14 @@ public class TeacherController {
      * 更新个人信息
      */
     @PutMapping("/profile")
-    public Result<String> updateProfile(@RequestBody Teacher teacher,
+    public Result<String> updateProfile(@RequestBody Map<String, String> profileData,
                                         HttpServletRequest request) {
         try {
             Long teacherId = (Long) request.getAttribute("roleId");
-            teacherService.updateProfile(teacherId, teacher);
+            String email = profileData.get("email");
+            String phone = profileData.get("phone");
+            
+            teacherService.updateProfile(teacherId, email, phone);
             return Result.success("更新成功");
         } catch (Exception e) {
             return Result.error("更新失败: " + e.getMessage());

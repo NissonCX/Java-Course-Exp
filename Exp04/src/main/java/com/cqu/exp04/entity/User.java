@@ -24,6 +24,6 @@ public class User extends BaseEntity {
     private Integer status; // 1-正常, 0-禁用
 
     public enum UserRole {
-        STUDENT, TEACHER, ADMIN
+        STUDENT, TEACHER, ADMIN, SUPER_ADMIN
     }
 }

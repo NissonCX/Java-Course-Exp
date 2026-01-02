@@ -328,25 +328,16 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     @Transactional
-    public void updateProfile(Long studentId, Student student) {
+    public void updateProfile(Long studentId, String email, String phone) {
         // 1. 验证学生是否存在
         Student existingStudent = studentMapper.findById(studentId)
                 .orElseThrow(() -> new RuntimeException("学生不存在"));
 
-        // 2. 更新允许修改的字段
-        existingStudent.setName(student.getName());
-        existingStudent.setGender(student.getGender());
-        existingStudent.setBirthDate(student.getBirthDate());
-        existingStudent.setMajor(student.getMajor());
-        existingStudent.setClassName(student.getClassName());
-
-        // 3. 执行更新
-        studentMapper.updateById(existingStudent);
-
-        // 4. 同步更新User表的realName
+        // 2. 同步更新User表的email和phone
         User user = userMapper.findById(existingStudent.getUserId())
                 .orElseThrow(() -> new RuntimeException("用户不存在"));
-        user.setRealName(student.getName());
+        user.setEmail(email);
+        user.setPhone(phone);
         userMapper.updateById(user);
     }
 }

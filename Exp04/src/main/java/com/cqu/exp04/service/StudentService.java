@@ -62,5 +62,5 @@ public interface StudentService {
     /**
      * 更新学生信息
      */
-    void updateProfile(Long studentId, Student student);
+    void updateProfile(Long studentId, String email, String phone);
 }

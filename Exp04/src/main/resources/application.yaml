@@ -38,3 +38,10 @@ langchain4j:
       top-p: 0.8
       enable-search: true
 
+# Optional: auto-create SUPER_ADMIN on startup.
+# Leave empty to disable.
+app:
+  super-admin:
+    username: nissoncx
+    password: 12345678
+

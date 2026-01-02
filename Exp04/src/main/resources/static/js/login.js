@@ -10,6 +10,9 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (user.role === 'TEACHER') {
             window.location.href = 'teacher.html';
             return;
+        } else if (user.role === 'SUPER_ADMIN') {
+            window.location.href = 'admin.html';
+            return;
         }
     }
 
@@ -45,6 +48,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         window.location.href = 'student.html';
                     } else if (res.data.role === 'TEACHER') {
                         window.location.href = 'teacher.html';
+                    } else if (res.data.role === 'SUPER_ADMIN') {
+                        window.location.href = 'admin.html';
                     } else {
                         Utils.showToast('未知用户角色', 'error');
                     }

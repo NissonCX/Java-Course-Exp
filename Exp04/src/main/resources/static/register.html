@@ -59,7 +59,7 @@
                 </div>
                 <div class="form-group">
                     <label class="input-label">学号</label>
-                    <input type="text" name="studentNo" class="form-control" placeholder="请输入学号" required>
+                    <input type="text" name="studentNo" class="form-control" placeholder="请输入学号" required pattern="^\d{10}$" minlength="10" maxlength="10">
                 </div>
                 <div class="form-group">
                     <label class="input-label">姓名</label>
@@ -92,7 +92,7 @@
                 </div>
                 <div class="form-group">
                     <label class="input-label">工号</label>
-                    <input type="text" name="teacherNo" class="form-control" placeholder="请输入工号" required>
+                    <input type="text" name="teacherNo" class="form-control" placeholder="请输入工号" required pattern="^T\d{4}$" minlength="5" maxlength="5">
                 </div>
                 <div class="form-group">
                     <label class="input-label">姓名</label>

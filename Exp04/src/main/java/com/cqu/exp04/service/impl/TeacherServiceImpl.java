@@ -277,26 +277,21 @@ public class TeacherServiceImpl implements TeacherService {
 
     @Override
     @Transactional
-    public void updateProfile(Long teacherId, Teacher teacher) {
+    public void updateProfile(Long teacherId, String email, String phone) {
         // 1. 验证教师是否存在
         Teacher existingTeacher = teacherMapper.findById(teacherId)
                 .orElseThrow(() -> new RuntimeException("教师不存在"));
 
-        // 2. 更新允许修改的字段
-        existingTeacher.setName(teacher.getName());
-        existingTeacher.setGender(teacher.getGender());
-        existingTeacher.setTitle(teacher.getTitle());
-        existingTeacher.setDepartment(teacher.getDepartment());
-        existingTeacher.setEmail(teacher.getEmail());
-        existingTeacher.setPhone(teacher.getPhone());
-
-        // 3. 执行更新
+        // 2. 更新Teacher表的email和phone
+        existingTeacher.setEmail(email);
+        existingTeacher.setPhone(phone);
         teacherMapper.updateById(existingTeacher);
 
-        // 4. 同步更新User表的realName
+        // 3. 同步更新User表的email和phone
         User user = userMapper.findById(existingTeacher.getUserId())
                 .orElseThrow(() -> new RuntimeException("用户不存在"));
-        user.setRealName(teacher.getName());
+        user.setEmail(email);
+        user.setPhone(phone);
         userMapper.updateById(user);
     }
 }

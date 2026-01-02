@@ -95,9 +95,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('profileClass').value = s.className || '';
                 document.getElementById('profileEmail').value = s.email || '';
                 document.getElementById('profilePhone').value = s.phone || '';
+            } else {
+                Utils.showToast(res.message || '加载个人信息失败', 'error');
             }
         } catch (error) {
-            Utils.showToast('加载个人信息失败', 'error');
+            Utils.showToast('加载个人信息失败: ' + error.message, 'error');
         } finally {
             showLoading(false);
         }
@@ -113,11 +115,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const res = await API.updateStudentProfile(data);
             if (res.code === 200) {
                 Utils.showToast('更新成功', 'success');
+                // 重新加载个人信息以确保显示最新数据
+                loadProfile();
             } else {
                 Utils.showToast(res.message, 'error');
             }
         } catch (error) {
-            Utils.showToast('更新失败', 'error');
+            Utils.showToast('更新失败: ' + error.message, 'error');
         }
     });
 

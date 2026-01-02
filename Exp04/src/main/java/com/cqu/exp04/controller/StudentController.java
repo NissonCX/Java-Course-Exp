@@ -2,6 +2,8 @@ package com.cqu.exp04.controller;
 
 import com.cqu.exp04.dto.AIConsultRequest;
 import com.cqu.exp04.entity.Student;
+import com.cqu.exp04.entity.User;
+import com.cqu.exp04.mapper.UserMapper;
 import com.cqu.exp04.security.JwtUtil;
 import com.cqu.exp04.service.AIService;
 import com.cqu.exp04.service.StudentService;
@@ -13,6 +15,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -31,16 +34,41 @@ public class StudentController {
 
     @Autowired
     private JwtUtil jwtUtil;
+    
+    @Autowired
+    private UserMapper userMapper;
 
     /**
      * 获取个人信息
      */
     @GetMapping("/profile")
-    public Result<Student> getProfile(HttpServletRequest request) {
+    public Result<Map<String, Object>> getProfile(HttpServletRequest request) {
         try {
             Long studentId = (Long) request.getAttribute("roleId");
             Student student = studentService.getById(studentId);
-            return Result.success(student);
+            
+            // 获取对应的用户信息以获取邮箱和电话
+            User user = userMapper.findById(student.getUserId())
+                .orElseThrow(() -> new RuntimeException("用户不存在"));
+            
+            // 合并学生和用户信息
+            Map<String, Object> profile = new HashMap<>();
+            profile.put("id", student.getId());
+            profile.put("studentNo", student.getStudentNo());
+            profile.put("userId", student.getUserId());
+            profile.put("name", student.getName());
+            profile.put("gender", student.getGender());
+            profile.put("birthDate", student.getBirthDate());
+            profile.put("major", student.getMajor());
+            profile.put("className", student.getClassName());
+            profile.put("grade", student.getGrade());
+            profile.put("enrollmentYear", student.getEnrollmentYear());
+            profile.put("email", user.getEmail());
+            profile.put("phone", user.getPhone());
+            profile.put("createTime", student.getCreateTime());
+            profile.put("updateTime", student.getUpdateTime());
+            
+            return Result.success(profile);
         } catch (Exception e) {
             return Result.error(e.getMessage());
         }
@@ -50,11 +78,14 @@ public class StudentController {
      * 更新个人信息
      */
     @PutMapping("/profile")
-    public Result<String> updateProfile(@RequestBody Student student,
+    public Result<String> updateProfile(@RequestBody Map<String, String> profileData,
                                         HttpServletRequest request) {
         try {
             Long studentId = (Long) request.getAttribute("roleId");
-            studentService.updateProfile(studentId, student);
+            String email = profileData.get("email");
+            String phone = profileData.get("phone");
+            
+            studentService.updateProfile(studentId, email, phone);
             return Result.success("更新成功");
         } catch (Exception e) {
             return Result.error("更新失败: " + e.getMessage());

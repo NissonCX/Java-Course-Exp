@@ -74,5 +74,5 @@ public interface TeacherService {
     /**
      * 更新教师信息
      */
-    void updateProfile(Long teacherId, Teacher teacher);
+    void updateProfile(Long teacherId, String email, String phone);
 }

@@ -171,5 +171,39 @@ const API = {
             method: 'PUT',
             body: JSON.stringify({ status })
         });
+    },
+
+    // --- Admin Methods (SUPER_ADMIN) ---
+    adminCreateStudent: (data) => {
+        return API.request('/admin/students', {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    },
+    adminCreateTeacher: (data) => {
+        return API.request('/admin/teachers', {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    },
+    adminCreateCourse: (data) => {
+        return API.request('/admin/courses', {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    },
+    adminCreateTeachingClass: (data) => {
+        return API.request('/admin/teaching-classes', {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    },
+
+    adminListCourses: () => {
+        return API.request('/admin/courses');
+    },
+
+    adminListTeachers: () => {
+        return API.request('/admin/teachers');
     }
 };
