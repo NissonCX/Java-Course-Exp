@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1b7376d4-1472-4331-8d9d-b8f6795d0954" name="Changes" comment="docs(README): 更新课程实验文档结构与说明&#10;&#10;- 重构 README 内容，从实验一到实验四的介绍改为更清晰的目录结构&#10;- 添加仓库结构说明，列出各实验目录及其技术栈&#10;- 补充环境要求与快速开始指南，包含每个实验的运行方式&#10;- 添加常见问题解答，解决数据库连接和AI功能配置问题&#10;- 更新文档组织结构，便于按顺序学习各实验内容" />
+    <list default="true" id="1b7376d4-1472-4331-8d9d-b8f6795d0954" name="Changes" comment="feat(README): 更新文档以包含微服务实验内容&#10;&#10;- 添加 Exp_Final 微服务实验的详细描述和技术栈介绍&#10;- 更新项目架构说明，添加微服务模块和运行方式&#10;- 修改环境要求，增加 Nacos 依赖说明&#10;- 更新启动顺序说明，添加微服务启动步骤&#10;- 修正 FAQ 部分，包含微服务启动相关问题解答&#10;- 调整实验顺序说明，添加 Exp_Final 至阅读顺序&#10;- 更新数据库依赖说明，明确各实验对 MySQL 的使用&#10;- 修改课程报告目录描述，明确文档格式类型" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -92,6 +92,7 @@
       <workItem from="1764583979563" duration="175000" />
       <workItem from="1767270986457" duration="324000" />
       <workItem from="1767271853075" duration="202000" />
+      <workItem from="1767480382187" duration="191000" />
     </task>
     <task id="LOCAL-00001" summary="第一次作业完成（实验报告完成）">
       <option name="closed" value="true" />
@@ -157,7 +158,15 @@
       <option name="project" value="LOCAL" />
       <updated>1767272045127</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="feat(README): 更新文档以包含微服务实验内容&#10;&#10;- 添加 Exp_Final 微服务实验的详细描述和技术栈介绍&#10;- 更新项目架构说明，添加微服务模块和运行方式&#10;- 修改环境要求，增加 Nacos 依赖说明&#10;- 更新启动顺序说明，添加微服务启动步骤&#10;- 修正 FAQ 部分，包含微服务启动相关问题解答&#10;- 调整实验顺序说明，添加 Exp_Final 至阅读顺序&#10;- 更新数据库依赖说明，明确各实验对 MySQL 的使用&#10;- 修改课程报告目录描述，明确文档格式类型">
+      <option name="closed" value="true" />
+      <created>1767480560600</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1767480560600</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -167,7 +176,8 @@
     <MESSAGE value="第一次作业完成（实验报告完成）" />
     <MESSAGE value="修复Bug" />
     <MESSAGE value="docs(README): 更新课程实验文档结构与说明&#10;&#10;- 重构 README 内容，从实验一到实验四的介绍改为更清晰的目录结构&#10;- 添加仓库结构说明，列出各实验目录及其技术栈&#10;- 补充环境要求与快速开始指南，包含每个实验的运行方式&#10;- 添加常见问题解答，解决数据库连接和AI功能配置问题&#10;- 更新文档组织结构，便于按顺序学习各实验内容" />
-    <option name="LAST_COMMIT_MESSAGE" value="docs(README): 更新课程实验文档结构与说明&#10;&#10;- 重构 README 内容，从实验一到实验四的介绍改为更清晰的目录结构&#10;- 添加仓库结构说明，列出各实验目录及其技术栈&#10;- 补充环境要求与快速开始指南，包含每个实验的运行方式&#10;- 添加常见问题解答，解决数据库连接和AI功能配置问题&#10;- 更新文档组织结构，便于按顺序学习各实验内容" />
+    <MESSAGE value="feat(README): 更新文档以包含微服务实验内容&#10;&#10;- 添加 Exp_Final 微服务实验的详细描述和技术栈介绍&#10;- 更新项目架构说明，添加微服务模块和运行方式&#10;- 修改环境要求，增加 Nacos 依赖说明&#10;- 更新启动顺序说明，添加微服务启动步骤&#10;- 修正 FAQ 部分，包含微服务启动相关问题解答&#10;- 调整实验顺序说明，添加 Exp_Final 至阅读顺序&#10;- 更新数据库依赖说明，明确各实验对 MySQL 的使用&#10;- 修改课程报告目录描述，明确文档格式类型" />
+    <option name="LAST_COMMIT_MESSAGE" value="feat(README): 更新文档以包含微服务实验内容&#10;&#10;- 添加 Exp_Final 微服务实验的详细描述和技术栈介绍&#10;- 更新项目架构说明，添加微服务模块和运行方式&#10;- 修改环境要求，增加 Nacos 依赖说明&#10;- 更新启动顺序说明，添加微服务启动步骤&#10;- 修正 FAQ 部分，包含微服务启动相关问题解答&#10;- 调整实验顺序说明，添加 Exp_Final 至阅读顺序&#10;- 更新数据库依赖说明，明确各实验对 MySQL 的使用&#10;- 修改课程报告目录描述，明确文档格式类型" />
   </component>
   <component name="github-copilot-workspace">
     <instructionFileLocations>
