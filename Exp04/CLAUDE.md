@@ -172,6 +172,14 @@ String response = chatLanguageModel.generate(promptWithContext);
 - `GET /class/{classId}/statistics` - Get class statistics
 - `POST /ai/consult` - AI teaching analytics (requires `teachingClassId`)
 
+### Admin APIs (`/api/admin`)
+- `POST /students` - Create new student (requires SUPER_ADMIN)
+- `POST /teachers` - Create new teacher (requires SUPER_ADMIN)
+- `POST /courses` - Create new course (requires SUPER_ADMIN)
+- `POST /teaching-classes` - Create new teaching class (requires SUPER_ADMIN)
+- `GET /courses` - Get all courses (requires SUPER_ADMIN)
+- `GET /teachers` - Get all teachers (requires SUPER_ADMIN)
+
 ### Course APIs (`/api/course`)
 - Public endpoints for browsing courses (implementation varies)
 
