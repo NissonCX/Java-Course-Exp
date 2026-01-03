@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>教师端 - 学生成绩管理系统</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .input-score {
+            width: 60px;
+            padding: 4px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            text-align: center;
+        }
+        .class-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        .tag {
+            background-color: var(--surface-muted);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+        }
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin-top: 20px;
+        }
+        .report-section {
+            margin-top: 2rem;
+        }
+        .report-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        .chart-card {
+            background: var(--surface-color);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            transition: var(--transition);
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow-sm);
+        }
+        .chart-card:hover {
+            box-shadow: var(--shadow-md);
+        }
+        .chart-card h4 {
+            margin: 0 0 var(--spacing-md) 0;
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container navbar-content">
+            <a href="#" class="logo">🎓 成绩管理系统</a>
+            <div class="user-menu">
+                <div class="user-info">
+                    <div class="user-name" id="userName">Teacher Name</div>
+                    <div class="user-role">教师</div>
+                </div>
+                <button class="btn btn-outline" id="themeToggleBtn" type="button" data-theme-toggle>暗色</button>
+                <button class="btn btn-outline" id="logoutBtn">退出</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <div class="sidebar-nav">
+                <a href="#" class="nav-item active" data-view="classes">
+                    📚 我的教学班
+                </a>
+                <a href="#" class="nav-item" data-view="analysis">
+                    🤖 教学分析
+                </a>
+                <a href="#" class="nav-item" data-view="profile">
+                    👤 个人信息
+                </a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <!-- Loading -->
+            <div id="loading" style="display: none; text-align: center; padding: 2rem;">
+                <div class="spinner" style="margin: 0 auto;"></div>
+            </div>
+
+            <!-- View: My Classes -->
+            <div id="view-classes" class="view-section">
+                <h2 style="margin-bottom: var(--spacing-lg);">我的教学班</h2>
+                <div id="classesGrid" class="course-grid">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- View: Class Detail (Modal-like full view) -->
+            <div id="view-class-detail" class="view-section" style="display: none;">
+                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap;">
+                    <button class="btn btn-outline" id="backToClassesBtn">← 返回列表</button>
+                    <h2 id="currentClassName">班级详情</h2>
+                    <div style="margin-left: auto; display: flex; align-items: center; gap: 0.5rem;" id="classStatusActions">
+                        <span style="color: var(--text-secondary); font-size: 0.9rem;">教学班状态</span>
+                        <select id="classStatusSelect" class="form-control" style="max-width: 180px;" onclick="event.stopPropagation()">
+                            <option value="1">未开课（可选课）</option>
+                            <option value="2">已开课（不可选课）</option>
+                            <option value="0">已结课（不可选课）</option>
+                        </select>
+                        <button class="btn btn-primary" id="classStatusSaveBtn" onclick="event.stopPropagation()">更新状态</button>
+                    </div>
+                </div>
+
+                <!-- Stats Summary -->
+                <div class="stats-grid" id="classStatsGrid" style="margin-bottom: 1.5rem;">
+                    <!-- Stats loaded here -->
+                </div>
+
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                        <h3>学生成绩录入</h3>
+                        <button class="btn btn-primary" id="saveAllScoresBtn">保存所有更改</button>
+                    </div>
+                    <div class="table-container">
+                        <table id="scoreInputTable">
+                            <thead>
+                                <tr>
+                                    <th>学号</th>
+                                    <th>姓名</th>
+                                    <th>平时(20%)</th>
+                                    <th>期中(20%)</th>
+                                    <th>实验(20%)</th>
+                                    <th>期末(40%)</th>
+                                    <th>总评</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Students loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Report Section -->
+                <div class="report-section">
+                    <h3 style="margin-bottom: var(--spacing-md);">班级成绩分析报表</h3>
+                    <div class="chart-container">
+                        <canvas id="classScoresChart"></canvas>
+                    </div>
+                    
+                    <div class="report-grid">
+                        <div class="chart-card">
+                            <h4>成绩等级分布</h4>
+                            <canvas id="gradeDistributionChart" style="max-height: 300px;"></canvas>
+                        </div>
+                        <div class="chart-card">
+                            <h4>各项成绩平均分雷达图</h4>
+                            <canvas id="scoreStatsChart" style="max-height: 300px;"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View: Analysis -->
+            <div id="view-analysis" class="view-section" style="display: none;">
+                <h2 style="margin-bottom: var(--spacing-lg);">AI 教学分析</h2>
+                <div class="card" style="margin-bottom: 1rem;">
+                    <div class="form-group">
+                        <label class="input-label">选择教学班</label>
+                        <select id="analysisClassSelect" class="form-control" style="max-width: 300px;">
+                            <option value="">请选择班级...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="chat-container">
+                        <div class="chat-messages" id="analysisMessages">
+                            <div class="message ai">
+                                请选择一个教学班，并告诉我你想了解什么（例如："分析这个班的成绩分布"或"有哪些学生需要重点关注"）。
+                            </div>
+                        </div>
+                        <div class="chat-input-area">
+                            <input type="text" class="chat-input" id="analysisInput" placeholder="输入问题...">
+                            <button class="btn btn-primary" id="sendAnalysisBtn">分析</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View: Profile -->
+            <div id="view-profile" class="view-section" style="display: none;">
+                <h2 style="margin-bottom: var(--spacing-lg);">个人信息</h2>
+                <div class="card" style="max-width: 600px;">
+                    <form id="profileForm">
+                        <div class="form-group">
+                            <label class="input-label">工号</label>
+                            <input type="text" id="profileTeacherNo" class="form-control" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label class="input-label">姓名</label>
+                            <input type="text" id="profileName" class="form-control" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label class="input-label">邮箱</label>
+                            <input type="email" id="profileEmail" name="email" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label class="input-label">电话</label>
+                            <input type="tel" id="profilePhone" name="phone" class="form-control">
+                        </div>
+                        <button type="submit" class="btn btn-primary">保存修改</button>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/utils.js"></script>
+    <script src="js/api.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="js/teacher.js"></script>
+</body>
+</html>

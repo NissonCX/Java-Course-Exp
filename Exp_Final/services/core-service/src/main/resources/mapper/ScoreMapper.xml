@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cqu.core.mapper.ScoreMapper">
+
+    <resultMap id="ScoreResultMap" type="com.cqu.common.entity.Score">
+        <id property="id" column="id"/>
+        <result property="enrollmentId" column="enrollment_id"/>
+        <result property="studentId" column="student_id"/>
+        <result property="teachingClassId" column="teaching_class_id"/>
+        <result property="usualScore" column="usual_score"/>
+        <result property="midtermScore" column="midterm_score"/>
+        <result property="experimentScore" column="experiment_score"/>
+        <result property="finalScore" column="final_score"/>
+        <result property="totalScore" column="total_score"/>
+        <result property="gradePoint" column="grade_point"/>
+        <result property="usualScoreTime" column="usual_score_time"/>
+        <result property="midtermScoreTime" column="midterm_score_time"/>
+        <result property="experimentScoreTime" column="experiment_score_time"/>
+        <result property="finalScoreTime" column="final_score_time"/>
+        <result property="totalScoreTime" column="total_score_time"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <resultMap id="ScoreWithStudentResultMap" type="com.cqu.common.entity.Score" extends="ScoreResultMap">
+        <association property="student" javaType="com.cqu.common.entity.Student">
+            <id property="id" column="s_id"/>
+            <result property="studentNo" column="student_no"/>
+            <result property="name" column="s_name"/>
+            <result property="major" column="major"/>
+        </association>
+    </resultMap>
+
+    <resultMap id="ScoreWithTeachingClassResultMap" type="com.cqu.common.entity.Score" extends="ScoreResultMap">
+        <association property="teachingClass" javaType="com.cqu.common.entity.TeachingClass">
+            <id property="id" column="tc_id"/>
+            <result property="classNo" column="class_no"/>
+            <result property="semester" column="semester"/>
+            <result property="classroom" column="classroom"/>
+            <association property="course" javaType="com.cqu.common.entity.Course">
+                <id property="id" column="c_id"/>
+                <result property="courseNo" column="course_no"/>
+                <result property="courseName" column="course_name"/>
+                <result property="credit" column="credit"/>
+            </association>
+            <association property="teacher" javaType="com.cqu.common.entity.Teacher">
+                <id property="id" column="t_id"/>
+                <result property="name" column="t_name"/>
+            </association>
+        </association>
+    </resultMap>
+
+    <select id="findById" resultMap="ScoreResultMap">
+        SELECT * FROM score WHERE id = #{id}
+    </select>
+
+    <select id="findByEnrollmentId" resultMap="ScoreResultMap">
+        SELECT * FROM score WHERE enrollment_id = #{enrollmentId}
+    </select>
+
+    <select id="findByStudentId" resultMap="ScoreWithTeachingClassResultMap">
+        SELECT
+            s.*,
+            tc.id as tc_id, tc.class_no, tc.semester, tc.classroom,
+            c.id as c_id, c.course_no, c.course_name, c.credit,
+            t.id as t_id, t.name as t_name
+        FROM score s
+        LEFT JOIN teaching_class tc ON s.teaching_class_id = tc.id
+        LEFT JOIN course c ON tc.course_id = c.id
+        LEFT JOIN teacher t ON tc.teacher_id = t.id
+        WHERE s.student_id = #{studentId}
+        ORDER BY s.create_time DESC
+    </select>
+
+    <select id="findByTeachingClassId" resultMap="ScoreWithStudentResultMap">
+        SELECT
+            s.*,
+            st.id as s_id,
+            st.student_no,
+            st.name as s_name,
+            st.major
+        FROM score s
+        LEFT JOIN student st ON s.student_id = st.id
+        WHERE s.teaching_class_id = #{teachingClassId}
+        ORDER BY s.total_score DESC
+    </select>
+
+    <select id="findStudentScoreDetails" resultType="com.cqu.exp04.vo.StudentScoreVO">
+        SELECT
+            s.id as scoreId,
+            c.course_no as courseNo,
+            c.course_name as courseName,
+            c.credit,
+            t.name as teacherName,
+            tc.class_no as classNo,
+            tc.semester,
+            s.usual_score as usualScore,
+            s.midterm_score as midtermScore,
+            s.experiment_score as experimentScore,
+            s.final_score as finalScore,
+            s.total_score as totalScore,
+            s.grade_point as gradePoint,
+            s.total_score_time as totalScoreTime
+        FROM score s
+        JOIN teaching_class tc ON s.teaching_class_id = tc.id
+        JOIN course c ON tc.course_id = c.id
+        JOIN teacher t ON tc.teacher_id = t.id
+        WHERE s.student_id = #{studentId}
+        ORDER BY tc.semester DESC, c.course_name
+    </select>
+
+    <select id="findClassScoresWithStudent" resultMap="ScoreWithStudentResultMap">
+        SELECT
+            s.*,
+            st.id as s_id,
+            st.student_no,
+            st.name as s_name,
+            st.major
+        FROM score s
+        JOIN student st ON s.student_id = st.id
+        WHERE s.teaching_class_id = #{teachingClassId}
+        ORDER BY s.total_score DESC
+    </select>
+
+    <insert id="batchInsert">
+        INSERT INTO score (
+            enrollment_id, student_id, teaching_class_id,
+            usual_score, midterm_score, experiment_score, final_score,
+            total_score, grade_point,
+            usual_score_time, midterm_score_time, experiment_score_time,
+            final_score_time, total_score_time
+        ) VALUES
+        <foreach collection="scores" item="item" separator=",">
+            (#{item.enrollmentId}, #{item.studentId}, #{item.teachingClassId},
+             #{item.usualScore}, #{item.midtermScore}, #{item.experimentScore}, #{item.finalScore},
+             #{item.totalScore}, #{item.gradePoint},
+             #{item.usualScoreTime}, #{item.midtermScoreTime}, #{item.experimentScoreTime},
+             #{item.finalScoreTime}, #{item.totalScoreTime})
+        </foreach>
+    </insert>
+
+    <select id="calculateStudentAverageScore" resultType="java.lang.Double">
+        SELECT AVG(total_score)
+        FROM score
+        WHERE student_id = #{studentId} AND total_score IS NOT NULL
+    </select>
+
+    <select id="countScoreDistribution" resultType="java.lang.Integer">
+        SELECT
+            SUM(CASE WHEN total_score >= 90 THEN 1 ELSE 0 END) as excellent,
+            SUM(CASE WHEN total_score >= 80 AND total_score &lt; 90 THEN 1 ELSE 0 END) as good,
+            SUM(CASE WHEN total_score >= 70 AND total_score &lt; 80 THEN 1 ELSE 0 END) as medium,
+            SUM(CASE WHEN total_score >= 60 AND total_score &lt; 70 THEN 1 ELSE 0 END) as pass,
+            SUM(CASE WHEN total_score &lt; 60 THEN 1 ELSE 0 END) as fail
+        FROM score
+        WHERE teaching_class_id = #{teachingClassId} AND total_score IS NOT NULL
+    </select>
+
+</mapper>

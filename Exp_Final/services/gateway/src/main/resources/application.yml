@@ -1,0 +1,111 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: gateway
+  cloud:
+    nacos:
+      discovery:
+        server-addr: localhost:8848
+        namespace: public
+    gateway:
+      # 全局 CORS 配置
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOriginPatterns: "*"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders: "*"
+            allowCredentials: true
+            maxAge: 3600
+
+      # 路由配置
+      routes:
+        # 认证服务路由
+        - id: auth-service
+          uri: lb://auth-service
+          predicates:
+            - Path=/api/auth/**
+          filters:
+            - StripPrefix=0
+
+        # AI 服务路由
+        - id: ai-service
+          uri: lb://ai-service
+          predicates:
+            - Path=/api/ai/**
+          filters:
+            - StripPrefix=0
+
+        # 学生服务路由
+        - id: student-service
+          uri: lb://student-service
+          predicates:
+            - Path=/api/student/**
+          filters:
+            - StripPrefix=0
+
+        # 教师服务路由
+        - id: teacher-service
+          uri: lb://teacher-service
+          predicates:
+            - Path=/api/teacher/**
+          filters:
+            - StripPrefix=0
+
+        # 课程服务路由
+        - id: course-service
+          uri: lb://course-service
+          predicates:
+            - Path=/api/course/**
+          filters:
+            - StripPrefix=0
+
+        # 成绩服务路由
+        - id: score-service
+          uri: lb://score-service
+          predicates:
+            - Path=/api/score/**
+          filters:
+            - StripPrefix=0
+
+        # 管理员服务路由
+        - id: admin-service
+          uri: lb://admin-service
+          predicates:
+            - Path=/api/admin/**
+          filters:
+            - StripPrefix=0
+
+        # 核心服务路由（兜底，保留用于向后兼容）
+        - id: core-service
+          uri: lb://core-service
+          predicates:
+            - Path=/api/**
+          filters:
+            - StripPrefix=0
+
+        # 静态资源路由（转发到 core-service）
+        - id: static-resources
+          uri: lb://core-service
+          predicates:
+            - Path=/, /index.html, /student.html, /teacher.html, /admin.html, /css/**, /js/**, /images/**, /favicon.ico
+          filters:
+            - StripPrefix=0
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    reactor.netty: INFO
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway

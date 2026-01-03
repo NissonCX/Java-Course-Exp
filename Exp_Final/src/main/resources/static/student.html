@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学生端 - 学生成绩管理系统</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .tab-header {
+            display: flex;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .tab-item {
+            flex: 1;
+            text-align: center;
+            padding: 0.75rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            border-bottom: 2px solid transparent;
+        }
+        .tab-item.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+            font-weight: 600;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin-top: 20px;
+        }
+        .report-section {
+            margin-top: 2rem;
+        }
+        .report-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        .chart-card {
+            background: var(--surface-color);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            transition: var(--transition);
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow-sm);
+        }
+        .chart-card:hover {
+            box-shadow: var(--shadow-md);
+        }
+        .chart-card h4 {
+            margin: 0 0 var(--spacing-md) 0;
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container navbar-content">
+            <a href="#" class="logo">🎓 成绩管理系统</a>
+            <div class="user-menu">
+                <div class="user-info">
+                    <div class="user-name" id="userName">Student Name</div>
+                    <div class="user-role">学生</div>
+                </div>
+                <button class="btn btn-outline" id="themeToggleBtn" type="button" data-theme-toggle>暗色</button>
+                <button class="btn btn-outline" id="logoutBtn">退出</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <div class="sidebar-nav">
+                <a href="#" class="nav-item active" data-view="scores">
+                    📊 我的成绩
+                </a>
+                <a href="#" class="nav-item" data-view="course-manage">
+                    📚 选课管理
+                </a>
+                <a href="#" class="nav-item" data-view="ai-advisor">
+                    🤖 AI 学业顾问
+                </a>
+                <a href="#" class="nav-item" data-view="profile">
+                    👤 个人信息
+                </a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <!-- Loading Indicator -->
+            <div id="loading" style="display: none; text-align: center; padding: 2rem;">
+                <div class="spinner" style="margin: 0 auto;"></div>
+                <p style="margin-top: 1rem; color: var(--text-secondary);">加载中...</p>
+            </div>
+
+            <!-- View: My Scores -->
+            <div id="view-scores" class="view-section">
+                <h2 style="margin-bottom: var(--spacing-lg);">我的成绩概览</h2>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-title">平均分</div>
+                        <div class="stat-value" id="avgScore">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">平均绩点</div>
+                        <div class="stat-value" id="avgGPA">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">修读学分</div>
+                        <div class="stat-value" id="totalCredits">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">课程总数</div>
+                        <div class="stat-value" id="totalCourses">-</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 style="margin-bottom: var(--spacing-md);">成绩明细</h3>
+                    <div class="table-container">
+                        <table id="scoresTable">
+                            <thead>
+                                <tr>
+                                    <th>课程名称</th>
+                                    <th>学分</th>
+                                    <th>学期</th>
+                                    <th>平时(20%)</th>
+                                    <th>期中(20%)</th>
+                                    <th>实验(20%)</th>
+                                    <th>期末(40%)</th>
+                                    <th>总评</th>
+                                    <th>绩点</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Report Section -->
+                <div class="report-section">
+                    <h3 style="margin-bottom: var(--spacing-md);">成绩分析报表</h3>
+                    <div class="chart-container">
+                        <canvas id="scoresChart"></canvas>
+                    </div>
+                    
+                    <div class="report-grid">
+                        <div class="chart-card">
+                            <h4>学科能力雷达图</h4>
+                            <canvas id="subjectDistributionChart" style="max-height: 300px;"></canvas>
+                        </div>
+                        <div class="chart-card">
+                            <h4>成绩等级统计</h4>
+                            <canvas id="gradeDistributionChart" style="max-height: 300px;"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View: Course Management -->
+            <div id="view-course-manage" class="view-section" style="display: none;">
+                <h2 style="margin-bottom: var(--spacing-lg);">选课管理</h2>
+
+                <div class="card">
+                    <div class="tab-header">
+                        <div class="tab-item active" data-tab="enrollments">已选课程</div>
+                        <div class="tab-item" data-tab="selection">选课大厅</div>
+                    </div>
+
+                    <!-- Tab: My Enrollments -->
+                    <div id="tab-enrollments" class="tab-content active">
+                        <p style="color: var(--text-secondary); margin-bottom: var(--spacing-md);">
+                            已选课程列表。如需退课，请点击相应按钮。
+                        </p>
+                        <div class="table-container">
+                            <table id="enrollmentsTable">
+                                <thead>
+                                    <tr>
+                                        <th>教学班号</th>
+                                        <th>课程名称</th>
+                                        <th>授课教师</th>
+                                        <th>学期</th>
+                                        <th>状态</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Populated by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Tab: Course Selection -->
+                    <div id="tab-selection" class="tab-content">
+                        <div style="margin-bottom: 1rem; display: flex; gap: 1rem;">
+                            <input type="text" id="semesterInput" class="form-control" placeholder="学期 (例如: 2023-2024-1)" style="max-width: 200px;">
+                            <button class="btn btn-primary" id="searchCoursesBtn">查询</button>
+                        </div>
+                        <div class="table-container">
+                            <table id="availableCoursesTable">
+                                <thead>
+                                    <tr>
+                                        <th>教学班号</th>
+                                        <th>课程名称</th>
+                                        <th>授课教师</th>
+                                        <th>学期</th>
+                                        <th>状态</th>
+                                        <th>已选/容量</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Populated by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View: AI Advisor -->
+            <div id="view-ai-advisor" class="view-section" style="display: none;">
+                <h2 style="margin-bottom: var(--spacing-lg);">AI 学业顾问</h2>
+                <div class="card">
+                    <div class="chat-container">
+                        <div class="chat-messages" id="chatMessages">
+                            <div class="message ai">
+                                你好！我是你的AI学业顾问。我可以根据你的成绩情况，为你提供学习建议、分析薄弱环节。有什么我可以帮你的吗？
+                            </div>
+                        </div>
+                        <div class="chat-input-area">
+                            <input type="text" class="chat-input" id="chatInput" placeholder="输入你的问题，例如：如何提高我的Java成绩？">
+                            <button class="btn btn-primary" id="sendMessageBtn">发送</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- View: Profile -->
+            <div id="view-profile" class="view-section" style="display: none;">
+                <h2 style="margin-bottom: var(--spacing-lg);">个人信息</h2>
+                <div class="card" style="max-width: 600px;">
+                    <form id="profileForm">
+                        <div class="form-group">
+                            <label class="input-label">学号</label>
+                            <input type="text" id="profileStudentNo" class="form-control" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label class="input-label">姓名</label>
+                            <input type="text" id="profileName" class="form-control" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label class="input-label">班级</label>
+                            <input type="text" id="profileClass" class="form-control" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label class="input-label">邮箱</label>
+                            <input type="email" id="profileEmail" name="email" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label class="input-label">电话</label>
+                            <input type="tel" id="profilePhone" name="phone" class="form-control">
+                        </div>
+                        <button type="submit" class="btn btn-primary">保存修改</button>
+                    </form>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="js/utils.js"></script>
+    <script src="js/api.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="js/student.js"></script>
+</body>
+</html>

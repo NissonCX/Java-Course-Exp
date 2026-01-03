@@ -1,0 +1,44 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: teacher-service
+  cloud:
+    nacos:
+      discovery:
+        server-addr: localhost:8848
+        namespace: public
+  datasource:
+    url: jdbc:mysql://localhost:3306/stu_grade_sys?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
+    username: root
+    password: 12345678
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  type-aliases-package: com.cqu.common.entity
+
+# Feign Configuration
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 10000
+        loggerLevel: BASIC
+
+logging:
+  level:
+    com.cqu.teacher.mapper: debug
+    com.cqu.teacher: info
+    com.cqu.teacher.client: DEBUG  # Enable Feign client logging
+    org.springframework.security: warn
+
+# JWT Configuration
+jwt:
+  secret: KSH6vF7U1eLW/xQi831jARHg6/Z+0bOF44LwOQg39UQ=
+  expiration: 86400000

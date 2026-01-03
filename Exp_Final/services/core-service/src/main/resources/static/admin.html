@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>超级管理员 - 学生成绩管理系统</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <style>
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: var(--spacing-lg);
+        }
+        @media (min-width: 980px) {
+            .two-col {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        pre {
+            white-space: pre-wrap;
+            word-break: break-word;
+            background: var(--surface-muted);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-md);
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        .muted {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar">
+    <div class="container navbar-content">
+        <a href="#" class="logo">🛡️ 管理后台</a>
+        <div class="user-menu">
+            <div class="user-info">
+                <div class="user-name" id="userName">Super Admin</div>
+                <div class="user-role">超级管理员</div>
+            </div>
+            <button class="btn btn-outline" id="themeToggleBtn" type="button" data-theme-toggle>暗色</button>
+            <button class="btn btn-outline" id="logoutBtn">退出</button>
+        </div>
+    </div>
+</nav>
+
+<div class="dashboard-layout">
+    <aside class="sidebar">
+        <div class="sidebar-nav">
+            <a href="#" class="nav-item active" data-view="create-student">➕ 新增学生</a>
+            <a href="#" class="nav-item" data-view="create-teacher">➕ 新增教师</a>
+            <a href="#" class="nav-item" data-view="create-course">➕ 新增课程</a>
+            <a href="#" class="nav-item" data-view="create-teaching-class">🧑‍🏫 新增教学班</a>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div id="loading" style="display: none; text-align: center; padding: 2rem;">
+            <div class="spinner" style="margin: 0 auto;"></div>
+            <p style="margin-top: 1rem; color: var(--text-secondary);">处理中...</p>
+        </div>
+
+        <!-- View: Create Student -->
+        <div id="view-create-student" class="view-section">
+            <h2 style="margin-bottom: var(--spacing-lg);">新增学生</h2>
+            <div class="two-col">
+                <div class="card">
+                    <h3 style="margin-bottom: var(--spacing-md);">学生账号与档案</h3>
+                    <form id="createStudentForm">
+                        <div class="input-group">
+                            <label class="input-label">学号（10位数字）</label>
+                            <input class="form-control" name="studentNo" placeholder="例如：2023100001" required pattern="^\d{10}$">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">初始密码</label>
+                            <input class="form-control" name="password" type="password" required>
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">姓名</label>
+                            <input class="form-control" name="name" required>
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">性别</label>
+                            <select class="form-control" name="gender" required>
+                                <option value="MALE">MALE</option>
+                                <option value="FEMALE">FEMALE</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">出生日期</label>
+                            <input class="form-control" name="birthDate" type="date">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">专业</label>
+                            <input class="form-control" name="major" required>
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">班级</label>
+                            <input class="form-control" name="className" placeholder="例如：计科01班">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">年级</label>
+                            <input class="form-control" name="grade" type="number" min="2000" max="2100" placeholder="例如：2023">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">入学年份</label>
+                            <input class="form-control" name="enrollmentYear" type="number" min="2000" max="2100" placeholder="例如：2023">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">邮箱</label>
+                            <input class="form-control" name="email" type="email" placeholder="可选">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">电话</label>
+                            <input class="form-control" name="phone" type="tel" placeholder="可选">
+                        </div>
+                        <button class="btn btn-primary" type="submit">创建学生</button>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <h3 style="margin-bottom: var(--spacing-md);">创建结果</h3>
+                    <p class="muted" style="margin-bottom: var(--spacing-md);">成功后会返回学生记录（包含 id）。</p>
+                    <pre id="studentResult">-</pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- View: Create Teacher -->
+        <div id="view-create-teacher" class="view-section" style="display:none;">
+            <h2 style="margin-bottom: var(--spacing-lg);">新增教师</h2>
+            <div class="two-col">
+                <div class="card">
+                    <h3 style="margin-bottom: var(--spacing-md);">教师账号与档案</h3>
+                    <form id="createTeacherForm">
+                        <div class="input-group">
+                            <label class="input-label">教工号（T开头4位数字）</label>
+                            <input class="form-control" name="teacherNo" placeholder="例如：T1001" required pattern="^T\d{4}$">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">初始密码</label>
+                            <input class="form-control" name="password" type="password" required>
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">姓名</label>
+                            <input class="form-control" name="name" required>
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">性别</label>
+                            <select class="form-control" name="gender" required>
+                                <option value="MALE">MALE</option>
+                                <option value="FEMALE">FEMALE</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">职称</label>
+                            <input class="form-control" name="title" placeholder="可选">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">院系</label>
+                            <input class="form-control" name="department" required>
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">邮箱</label>
+                            <input class="form-control" name="email" type="email" placeholder="可选">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">电话</label>
+                            <input class="form-control" name="phone" type="tel" placeholder="可选">
+                        </div>
+                        <button class="btn btn-primary" type="submit">创建教师</button>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <h3 style="margin-bottom: var(--spacing-md);">创建结果</h3>
+                    <p class="muted" style="margin-bottom: var(--spacing-md);">成功后会返回教师记录（包含 id）。</p>
+                    <pre id="teacherResult">-</pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- View: Create Course -->
+        <div id="view-create-course" class="view-section" style="display:none;">
+            <h2 style="margin-bottom: var(--spacing-lg);">新增课程</h2>
+            <div class="two-col">
+                <div class="card">
+                    <h3 style="margin-bottom: var(--spacing-md);">课程信息</h3>
+                    <form id="createCourseForm">
+                        <div class="input-group">
+                            <label class="input-label">课程编号</label>
+                            <input class="form-control" name="courseNo" required>
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">课程名称</label>
+                            <input class="form-control" name="courseName" required>
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">学分</label>
+                            <input class="form-control" name="credit" type="number" step="0.5" min="0" required>
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">学时</label>
+                            <input class="form-control" name="hours" type="number" step="1" min="1" required>
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">课程类型</label>
+                            <input class="form-control" name="courseType" placeholder="可选">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">课程描述</label>
+                            <textarea class="form-control" name="description" rows="4" placeholder="可选"></textarea>
+                        </div>
+                        <button class="btn btn-primary" type="submit">创建课程</button>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <h3 style="margin-bottom: var(--spacing-md);">创建结果</h3>
+                    <p class="muted" style="margin-bottom: var(--spacing-md);">成功后会返回课程记录（包含 id），可用于创建教学班。</p>
+                    <pre id="courseResult">-</pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- View: Create Teaching Class -->
+        <div id="view-create-teaching-class" class="view-section" style="display:none;">
+            <h2 style="margin-bottom: var(--spacing-lg);">新增教学班（为课程分配教师）</h2>
+            <div class="two-col">
+                <div class="card">
+                    <h3 style="margin-bottom: var(--spacing-md);">教学班信息</h3>
+                    <p class="muted" style="margin-bottom: var(--spacing-md);">
+                        说明：请选择课程与教师（列表从后端加载）。
+                    </p>
+                    <form id="createTeachingClassForm">
+                        <div class="input-group">
+                            <label class="input-label">教学班编号</label>
+                            <input class="form-control" name="classNo" placeholder="例如：CS101-01" required>
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">课程</label>
+                            <select class="form-control" name="courseId" id="teachingCourseSelect" required>
+                                <option value="">加载中...</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">教师</label>
+                            <select class="form-control" name="teacherId" id="teachingTeacherSelect" required>
+                                <option value="">加载中...</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">学期</label>
+                            <input class="form-control" name="semester" placeholder="例如：2023-2024-1" required>
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">容量（maxStudents）</label>
+                            <input class="form-control" name="maxStudents" type="number" min="1" required>
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">教室</label>
+                            <input class="form-control" name="classroom" placeholder="可选">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">上课时间</label>
+                            <input class="form-control" name="schedule" placeholder="可选">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">状态</label>
+                            <select class="form-control" name="status">
+                                <option value="1">未开课（可选课）</option>
+                                <option value="2">已开课（不可选课）</option>
+                                <option value="0">已结课（不可选课）</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary" type="submit">创建教学班</button>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <h3 style="margin-bottom: var(--spacing-md);">创建结果</h3>
+                    <p class="muted" style="margin-bottom: var(--spacing-md);">成功后会返回教学班记录（包含 id）。</p>
+                    <pre id="teachingClassResult">-</pre>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script src="js/utils.js"></script>
+<script src="js/api.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>

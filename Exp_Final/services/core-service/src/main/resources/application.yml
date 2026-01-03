@@ -1,0 +1,50 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: core-service
+  cloud:
+    nacos:
+      discovery:
+        server-addr: localhost:8848
+        namespace: public
+  datasource:
+    url: jdbc:mysql://localhost:3306/stu_grade_sys?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
+    username: root
+    password: 12345678
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  type-aliases-package: com.cqu.common.entity
+
+logging:
+  level:
+    com.cqu.core.mapper: debug
+    com.cqu.core: info
+    org.springframework.security: warn
+
+# JWT Configuration
+jwt:
+  secret: KSH6vF7U1eLW/xQi831jARHg6/Z+0bOF44LwOQg39UQ=
+  expiration: 86400000  # 24 hours
+
+# LangChain4j Configuration
+langchain4j:
+  dashscope:
+    chat-model:
+      api-key: ${DASHSCOPE_API_KEY:sk-664256e37ba2498db97965cfa62178aa}
+      model-name: qwen-max
+      temperature: 0.7
+      top-p: 0.8
+      enable-search: true
+
+# Optional: auto-create SUPER_ADMIN on startup.
+app:
+  super-admin:
+    username: nissoncx
+    password: 12345678

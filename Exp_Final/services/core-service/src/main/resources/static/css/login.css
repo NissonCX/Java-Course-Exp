@@ -1,0 +1,165 @@
+.login-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Softer, more modern background (light gradient + subtle blobs) */
+    background:
+        radial-gradient(1200px circle at 12% 10%, rgba(99, 102, 241, 0.18), transparent 55%),
+        radial-gradient(900px circle at 88% 18%, rgba(14, 165, 233, 0.14), transparent 52%),
+        radial-gradient(1000px circle at 80% 92%, rgba(16, 185, 129, 0.10), transparent 58%),
+        linear-gradient(180deg, #f8fafc 0%, #eef2ff 45%, #f1f5f9 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Decorative background shapes */
+.login-page::before, .login-page::after {
+    content: '';
+    position: absolute;
+    border-radius: 999px;
+    z-index: 0;
+    filter: blur(18px);
+    opacity: 0.55;
+}
+
+.login-page::before {
+    width: 520px;
+    height: 520px;
+    top: -220px;
+    left: -220px;
+    background: radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.35), transparent 60%);
+}
+
+.login-page::after {
+    width: 620px;
+    height: 620px;
+    bottom: -280px;
+    right: -260px;
+    background: radial-gradient(circle at 70% 40%, rgba(14, 165, 233, 0.28), transparent 62%);
+}
+
+.login-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 1.5rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    width: 100%;
+    max-width: 400px;
+    padding: 3rem 2.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    position: relative;
+    z-index: 1;
+    animation: slideUp 0.5s ease-out;
+}
+
+.theme-toggle-fab {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    z-index: 2;
+}
+
+html[data-theme="dark"] .login-page {
+    background:
+        radial-gradient(1200px circle at 12% 10%, rgba(99, 102, 241, 0.20), transparent 55%),
+        radial-gradient(900px circle at 88% 18%, rgba(14, 165, 233, 0.14), transparent 52%),
+        radial-gradient(1000px circle at 80% 92%, rgba(16, 185, 129, 0.10), transparent 58%),
+        linear-gradient(180deg, #0b1220 0%, #0f172a 55%, #0b1220 100%);
+}
+
+html[data-theme="dark"] .login-card {
+    background: rgba(15, 23, 42, 0.78);
+    border: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+html[data-theme="dark"] .login-title {
+    color: var(--text-primary);
+}
+
+html[data-theme="dark"] .login-subtitle {
+    color: var(--text-secondary);
+}
+
+html[data-theme="dark"] .demo-credentials {
+    background-color: rgba(255, 255, 255, 0.04);
+}
+
+@keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.login-header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+}
+
+.login-logo {
+    font-size: 3.5rem;
+    margin-bottom: 1rem;
+    display: inline-block;
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+}
+
+.login-title {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.025em;
+}
+
+.login-subtitle {
+    color: #64748b;
+    font-size: 0.95rem;
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.login-btn {
+    margin-top: 1rem;
+    padding: 0.875rem;
+    font-size: 1rem;
+    font-weight: 600;
+    width: 100%;
+    background: linear-gradient(to right, #4f46e5, #4338ca);
+    border: none;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.login-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+}
+
+.demo-credentials {
+    margin-top: 2.5rem;
+    padding: 1.25rem;
+    background-color: #f8fafc;
+    border-radius: var(--radius-md);
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    border: 1px dashed var(--border-color);
+    text-align: center;
+}
+
+.demo-title {
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    display: block;
+    color: var(--text-primary);
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+}

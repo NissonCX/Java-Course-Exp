@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cqu.core.mapper.StudentMapper">
+
+    <resultMap id="StudentResultMap" type="com.cqu.common.entity.Student">
+        <id property="id" column="id"/>
+        <result property="studentNo" column="student_no"/>
+        <result property="userId" column="user_id"/>
+        <result property="name" column="name"/>
+        <result property="gender" column="gender"/>
+        <result property="birthDate" column="birth_date"/>
+        <result property="major" column="major"/>
+        <result property="className" column="class_name"/>
+        <result property="grade" column="grade"/>
+        <result property="enrollmentYear" column="enrollment_year"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <select id="findByStudentNo" resultMap="StudentResultMap">
+        SELECT * FROM student WHERE student_no = #{studentNo}
+    </select>
+
+    <select id="findByUserId" resultMap="StudentResultMap">
+        SELECT * FROM student WHERE user_id = #{userId}
+    </select>
+
+    <select id="findById" resultMap="StudentResultMap">
+        SELECT * FROM student WHERE id = #{id}
+    </select>
+
+    <select id="findAll" resultMap="StudentResultMap">
+        SELECT * FROM student ORDER BY student_no
+    </select>
+
+    <select id="findByMajor" resultMap="StudentResultMap">
+        SELECT * FROM student WHERE major = #{major} ORDER BY student_no
+    </select>
+
+    <insert id="batchInsert">
+        INSERT INTO student (
+            student_no, user_id, name, gender, birth_date,
+            major, class_name, grade, enrollment_year
+        ) VALUES
+        <foreach collection="students" item="item" separator=",">
+            (#{item.studentNo}, #{item.userId}, #{item.name}, #{item.gender}, #{item.birthDate},
+             #{item.major}, #{item.className}, #{item.grade}, #{item.enrollmentYear})
+        </foreach>
+    </insert>
+
+</mapper>

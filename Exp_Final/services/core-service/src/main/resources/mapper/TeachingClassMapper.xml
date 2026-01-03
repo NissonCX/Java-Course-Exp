@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cqu.core.mapper.TeachingClassMapper">
+
+    <resultMap id="TeachingClassResultMap" type="com.cqu.common.entity.TeachingClass">
+        <id property="id" column="id"/>
+        <result property="classNo" column="class_no"/>
+        <result property="courseId" column="course_id"/>
+        <result property="teacherId" column="teacher_id"/>
+        <result property="semester" column="semester"/>
+        <result property="maxStudents" column="max_students"/>
+        <result property="currentStudents" column="current_students"/>
+        <result property="classroom" column="classroom"/>
+        <result property="schedule" column="schedule"/>
+        <result property="status" column="status"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <resultMap id="TeachingClassWithDetailsResultMap" type="com.cqu.common.entity.TeachingClass" extends="TeachingClassResultMap">
+        <association property="course" javaType="com.cqu.common.entity.Course">
+            <id property="id" column="c_id"/>
+            <result property="courseNo" column="course_no"/>
+            <result property="courseName" column="course_name"/>
+            <result property="credit" column="credit"/>
+            <result property="hours" column="hours"/>
+        </association>
+        <association property="teacher" javaType="com.cqu.common.entity.Teacher">
+            <id property="id" column="t_id"/>
+            <result property="teacherNo" column="teacher_no"/>
+            <result property="name" column="t_name"/>
+            <result property="title" column="title"/>
+            <result property="department" column="department"/>
+        </association>
+    </resultMap>
+
+    <select id="findByIdWithDetails" resultMap="TeachingClassWithDetailsResultMap">
+        SELECT
+            tc.*,
+            c.id as c_id, c.course_no, c.course_name, c.credit, c.hours,
+            t.id as t_id, t.teacher_no, t.name as t_name, t.title, t.department
+        FROM teaching_class tc
+        JOIN course c ON tc.course_id = c.id
+        JOIN teacher t ON tc.teacher_id = t.id
+        WHERE tc.id = #{id}
+    </select>
+
+    <select id="findByTeacherId" resultMap="TeachingClassWithDetailsResultMap">
+        SELECT
+            tc.*,
+            c.id as c_id, c.course_no, c.course_name, c.credit, c.hours,
+            t.id as t_id, t.teacher_no, t.name as t_name, t.title, t.department
+        FROM teaching_class tc
+        JOIN course c ON tc.course_id = c.id
+        JOIN teacher t ON tc.teacher_id = t.id
+        WHERE tc.teacher_id = #{teacherId}
+        ORDER BY tc.semester DESC, c.course_name
+    </select>
+
+    <select id="findByCourseId" resultMap="TeachingClassResultMap">
+        SELECT * FROM teaching_class WHERE course_id = #{courseId}
+    </select>
+
+    <select id="findAll" resultMap="TeachingClassWithDetailsResultMap">
+        SELECT
+            tc.*,
+            c.id as c_id, c.course_no, c.course_name, c.credit, c.hours,
+            t.id as t_id, t.teacher_no, t.name as t_name, t.title, t.department
+        FROM teaching_class tc
+        JOIN course c ON tc.course_id = c.id
+        JOIN teacher t ON tc.teacher_id = t.id
+        ORDER BY tc.semester DESC, c.course_name
+    </select>
+
+    <insert id="batchInsert">
+        INSERT INTO teaching_class (
+            class_no, course_id, teacher_id, semester,
+            max_students, current_students, classroom, schedule, status
+        ) VALUES
+        <foreach collection="classes" item="item" separator=",">
+            (#{item.classNo}, #{item.courseId}, #{item.teacherId}, #{item.semester},
+             #{item.maxStudents}, #{item.currentStudents}, #{item.classroom}, #{item.schedule}, #{item.status})
+        </foreach>
+    </insert>
+
+    <update id="updateCurrentStudents">
+        UPDATE teaching_class
+        SET current_students = #{currentStudents}
+        WHERE id = #{id}
+    </update>
+
+    <update id="incrementCurrentStudentsIfNotFull">
+        UPDATE teaching_class
+        SET current_students = current_students + 1
+        WHERE id = #{id}
+          AND current_students &lt; max_students
+    </update>
+
+</mapper>

@@ -1,0 +1,36 @@
+server:
+  port: 8088
+
+spring:
+  application:
+    name: ai-service
+  cloud:
+    nacos:
+      discovery:
+        server-addr: localhost:8848
+        namespace: public
+
+# Feign Configuration
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 10000
+        loggerLevel: BASIC
+
+logging:
+  level:
+    com.cqu.ai: info
+    com.cqu.ai.client: DEBUG  # Enable Feign client logging
+    org.springframework.security: warn
+
+# JWT Configuration
+jwt:
+  secret: KSH6vF7U1eLW/xQi831jARHg6/Z+0bOF44LwOQg39UQ=
+  expiration: 86400000
+
+# DashScope AI Configuration
+langchain4j:
+  dashscope:
+    api-key: ${DASHSCOPE_API_KEY:sk-123456}
