@@ -7,7 +7,7 @@ import com.cqu.common.entity.Teacher;
 import com.cqu.common.entity.TeachingClass;
 import com.cqu.common.entity.User;
 import com.cqu.core.mapper.UserMapper;
-import com.cqu.core.security.JwtUtil;
+import com.cqu.security.JwtUtil;
 import com.cqu.core.service.AIService;
 import com.cqu.core.service.TeacherService;
 import com.cqu.common.vo.ClassScoreStatisticsVO;

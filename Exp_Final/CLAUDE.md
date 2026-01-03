@@ -4,18 +4,81 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a **Student Grade Management System** (学生成绩管理系统) built with Spring Boot 3.x for the backend and vanilla JavaScript for the frontend. The system supports role-based access for students and teachers (and a SUPER_ADMIN capability), with JWT authentication and AI-powered advisory features using Alibaba's Qwen (通义千问) through LangChain4j.
+This is a **Student Grade Management System** (学生成绩管理系统) built as a microservices architecture using Spring Boot 3.x, Spring Cloud, Nacos service discovery, and vanilla JavaScript frontend. The system supports role-based access (students, teachers, administrators) with JWT authentication and AI-powered advisory features using Alibaba's Qwen through LangChain4j.
 
 **Key Technologies:**
 - Spring Boot **3.2.1** (JDK 21)
-- Spring MVC + Spring Security
-- MyBatis / MyBatis-Plus starter (see `pom.xml`)
+- Spring Cloud **2023.0.0**
+- Spring Cloud Alibaba **2022.0.0.0** (Nacos service discovery)
+- Spring Cloud Gateway (API Gateway)
+- Spring Security + JWT
+- MyBatis-Plus for persistence
 - MySQL database (`stu_grade_sys`)
-- JWT for stateless authentication
-- LangChain4j with DashScope (Alibaba Qwen) for AI features
-- Vanilla JavaScript frontend (no framework)
+- OpenFeign for inter-service communication
+- LangChain4j with DashScope (Alibaba Qwen)
+- Vanilla JavaScript frontend
 
-> Note: Redis is mentioned in some docs/notes, but this repository currently does not include Redis dependencies/config as a required runtime component.
+## Architecture
+
+### Microservices Structure
+
+This is a Maven multi-module project with the following structure:
+
+```
+Exp_Final/
+├── pom.xml                      # Root parent POM
+├── libs/                        # Shared libraries
+│   ├── common/                  # DTOs, VOs, entities, global exception handler
+│   └── security-common/         # JWT utilities, security configs
+└── services/                    # Microservices
+    ├── gateway/                 # API Gateway (port 8080)
+    ├── auth-service/            # Authentication (port 8081)
+    ├── core-service/            # Legacy/AI endpoints (port 8082)
+    ├── student-service/         # Student APIs (port 8083)
+    ├── teacher-service/         # Teacher APIs (port 8084)
+    ├── course-service/          # Course APIs (port 8085)
+    ├── score-service/           # Score APIs (port 8086)
+    ├── admin-service/           # Admin APIs (port 8087)
+    └── ai-service/              # AI services (port 8088)
+```
+
+### Service Responsibilities
+
+| Service | Port | Registered Name | Responsibilities |
+|---------|------|-----------------|------------------|
+| gateway | 8080 | gateway | Routes requests, serves static frontend, CORS handling |
+| auth-service | 8081 | auth-service | Login, registration, JWT issuance |
+| student-service | 8083 | student-service | Student profile, course enrollment |
+| teacher-service | 8084 | teacher-service | Teacher profile, class management |
+| course-service | 8085 | course-service | Course catalog, teaching class management |
+| score-service | 8086 | score-service | Score recording, grade calculation, statistics |
+| admin-service | 8087 | admin-service | Super admin operations, user/course creation |
+| ai-service | 8088 | ai-service | AI advisory features (optional) |
+| core-service | 8082 | core-service | AI endpoints (legacy), static resources |
+
+### Service Discovery with Nacos
+
+All services register with Nacos at `localhost:8848`:
+
+- **Nacos Console**: http://localhost:8848/nacos (username/password: `nacos/nacos`)
+- Services auto-register on startup using `spring.cloud.nacos.discovery.server-addr`
+- Gateway uses load balancer URIs (`lb://service-name`) to route requests
+- OpenFeign clients use service names (no hardcoded URLs) for inter-service calls
+
+### API Gateway Routes
+
+The gateway on port 8080 routes requests based on path prefixes:
+
+- `/api/auth/**` → auth-service
+- `/api/student/ai/**` → core-service (AI endpoints, higher priority)
+- `/api/student/**` → student-service
+- `/api/teacher/ai/**` → core-service (AI endpoints, higher priority)
+- `/api/teacher/**` → teacher-service
+- `/api/course/**` → course-service
+- `/api/score/**` → score-service
+- `/api/admin/**` → admin-service
+- `/api/ai/**` → ai-service
+- `/`, `/*.html`, `/css/**`, `/js/**` → core-service (static resources)
 
 ## Database Setup
 
@@ -28,6 +91,9 @@ This is a **Student Grade Management System** (学生成绩管理系统) built w
 ```bash
 # Start MySQL (macOS)
 mysql.server start
+
+# Start Nacos (Docker)
+docker-compose -f docker-compose-nacos.yml up -d
 ```
 
 **Database Schema:** The system uses 8 main tables:
@@ -35,224 +101,321 @@ mysql.server start
 - `student` - Student profiles
 - `teacher` - Teacher profiles
 - `course` - Course catalog
-- `teaching_class` - Teaching class instances (links courses, teachers, semesters)
+- `teaching_class` - Teaching class instances
 - `enrollment` - Student course enrollments
 - `score` - Student grades (usual, midterm, experiment, final, total, grade_point)
 - `score_weight` - Configurable score weightings per teaching class
 
+**Important:** Currently all services share the same database. Each service only accesses tables relevant to its domain through its own mappers.
+
 ## Build & Run Commands
 
-This is a Maven project (see `pom.xml`).
+### Building the Project
 
-**Run Application:**
-- Main class: `com.cqu.exp04.Exp04Application`
-- Default port: `8080`
+**IMPORTANT:** This project requires **JDK 21**. Ensure JAVA_HOME is set correctly:
 
-**Testing:**
 ```bash
-# Run all tests
+# Set JAVA_HOME to JDK 21 (macOS)
+export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home
+export PATH=$JAVA_HOME/bin:$PATH
+
+# Verify Java version
+java -version  # Should show version 21
+
+# Build entire project from root
+mvn clean install
+
+# Build without tests (faster)
+mvn clean install -DskipTests
+
+# Build specific service
+cd services/gateway && mvn clean install
+
+# Run tests
 mvn test
-
-# Run specific test
-mvn test -Dtest=Exp04ApplicationTests
 ```
 
-**Access Application:**
-- Frontend: `http://localhost:8080/index.html`
-- Student Dashboard: `http://localhost:8080/student.html`
-- Teacher Dashboard: `http://localhost:8080/teacher.html`
-- API Base: `http://localhost:8080/api`
+**Common Build Issue:** If you encounter `java.lang.ExceptionInInitializerError: com.sun.tools.javac.code.TypeTag`, this means Maven is using a different Java version (e.g., Java 25 from Homebrew). Always set JAVA_HOME before building.
 
-## Architecture
+### Starting Services
 
-### Package Structure
+**Prerequisites:**
+1. Ensure MySQL is running on localhost:3306
+2. Ensure Nacos is running on localhost:8848
 
+**Start All Services (Recommended):**
+
+```bash
+# Use the startup script (automatically sets JAVA_HOME)
+./start-all-services.sh
+
+# This script will:
+# - Verify MySQL and Nacos are running
+# - Start all microservices in the correct order
+# - Output logs to logs/ directory
 ```
-com.cqu.exp04/
-├── entity/          # Domain models (User, Student, Teacher, Course, Score, etc.)
-├── dto/             # Request DTOs (LoginRequest, StudentRegisterRequest, ScoreInputRequest, etc.)
-├── vo/              # Response VOs (Result, LoginResponse, StudentScoreVO, ClassScoreStatisticsVO)
-├── mapper/          # MyBatis mapper interfaces
-├── service/         # Business logic layer
-│   └── impl/        # Service implementations
-├── controller/      # REST API controllers
-├── config/          # Spring configurations (SecurityConfig, LangChain4jConfig)
-├── security/        # JWT utilities (JwtUtil, JwtAuthenticationFilter)
-└── exception/       # Global exception handler
+
+**Start Services Manually:**
+
+```bash
+# Set JAVA_HOME (macOS with JDK 21)
+export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home
+
+# Start services in background (each from their directory)
+cd services/auth-service && mvn spring-boot:run &
+cd services/course-service && mvn spring-boot:run &
+cd services/score-service && mvn spring-boot:run &
+cd services/student-service && mvn spring-boot:run &
+cd services/teacher-service && mvn spring-boot:run &
+cd services/admin-service && mvn spring-boot:run &
+cd services/core-service && mvn spring-boot:run &
+cd services/ai-service && mvn spring-boot:run &  # Optional
+cd services/gateway && mvn spring-boot:run &
+
+# Alternatively, use IntelliJ IDEA: Open root pom.xml and run each service's main class
 ```
+
+**Stop All Services:**
+
+```bash
+# Use the stop script
+./stop-all-services.sh
+```
+
+**Startup Order Recommendation:**
+1. Start Nacos first
+2. Start all domain services (auth, student, teacher, course, score, admin, ai, core)
+3. Start gateway last (it will discover services from Nacos)
+
+**Verification:**
+```bash
+# Check all services status with one command
+./check-services.sh
+
+# This will verify:
+# - MySQL is running
+# - Nacos is running and shows registered services
+# - Gateway is responsive
+# - All 9 services are registered in Nacos
+# - Login API is working
+
+# Manual checks:
+# Check Nacos service list
+curl http://localhost:8848/nacos/v1/ns/instance/list?serviceName=student-service
+
+# Test through gateway
+curl http://localhost:8080/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"2021001","password":"123456"}'
+```
+
+### Accessing the Application
+
+- **Frontend**: http://localhost:8080/index.html
+- **Student Dashboard**: http://localhost:8080/student.html
+- **Teacher Dashboard**: http://localhost:8080/teacher.html
+- **Admin Dashboard**: http://localhost:8080/admin.html
+- **Nacos Console**: http://localhost:8848/nacos
+- **API Base**: http://localhost:8080/api
+
+## Authentication & Security
+
+### JWT Configuration
+
+JWT is configured in `libs/security-common` and shared across services:
+- Secret: Defined in each service's `application.yml` (`jwt.secret`)
+- Expiration: 86400000ms (24 hours)
+- **Critical**: All services validating JWTs must use the **same secret**
 
 ### Authentication Flow
 
-1. **User Registration:** Students/teachers register via `/api/auth/register/student` or `/api/auth/register/teacher`
-2. **Login:** POST to `/api/auth/login` returns JWT token and user details
-3. **Authorization:** JWT token in `Authorization: Bearer <token>` header
-4. **Role Extraction:** `JwtAuthenticationFilter` extracts user info and sets `roleId` + `userRole` in request attributes
-5. **Role-Based Access:** Controllers check `request.getAttribute("roleId")` for user identity
+1. User logs in via `/api/auth/login` (handled by auth-service)
+2. Auth-service validates credentials and issues JWT containing:
+   - `userId`, `roleId`, `username`, `role` (STUDENT/TEACHER/ADMIN)
+3. Client includes token in `Authorization: Bearer <token>` header
+4. Each service validates JWT using shared `JwtUtil` from security-common
+5. Services extract user info from JWT claims for authorization
 
-### Frontend Integration Contract (Important)
+### Role-Based Access
 
-The frontend uses `src/main/resources/static/js/api.js` with:
-- `BASE_URL: '/api'`
-- requests like `/api/auth/login`, `/api/student/scores`, `/api/teacher/classes`, etc.
+- **STUDENT**: Access to `/api/student/**` endpoints
+- **TEACHER**: Access to `/api/teacher/**` endpoints
+- **ADMIN**: Access to `/api/admin/**` endpoints
+- **SUPER_ADMIN**: Configured in core-service `application.yml` (`app.super-admin`)
 
-If you change API paths/ports during refactors, you MUST keep this contract working (preferred) or update the frontend accordingly.
+## Inter-Service Communication
 
-## Microservices Refactor Playbook (for Claude Code)
+Services communicate using **OpenFeign** with Nacos service discovery:
 
-This section contains **ready-to-copy prompts** for Claude Code to refactor this monolith into microservices with minimal risk.
+```java
+// Example: StudentService calling ScoreService
+@FeignClient(name = "score-service")  // Uses service name, not URL
+public interface ScoreServiceClient {
+    @GetMapping("/api/score/student/{studentId}")
+    Result<Map<String, Object>> getStudentScores(@PathVariable Long studentId);
+}
+```
 
-### Goals
+**Key Points:**
+- No hardcoded URLs in `@FeignClient` annotations
+- Nacos provides service instance discovery
+- Spring Cloud LoadBalancer handles client-side load balancing
+- Gateway also uses `lb://service-name` URIs for routing
 
-- Refactor the monolith into a microservices architecture while preserving functionality:
-  - Auth (login/register/JWT)
-  - Student/Teacher/Admin APIs
-  - MyBatis persistence and existing database
-  - Static frontend pages remain accessible
-  - AI features remain available (optional per environment)
+## Frontend Integration Contract
 
-### Non-negotiable Constraints
+The frontend (`src/main/resources/static/` in core-service) uses:
+- `BASE_URL: '/api'` in `js/api.js`
+- All requests go through gateway on port 8080
+- Requests like `/api/auth/login`, `/api/student/scores`, `/api/teacher/classes`
 
-1. **Always ship runnable code** after each phase (compiles + starts).
-2. After each phase, run at least:
-   - `mvn -DskipTests=false test` (preferred) or `mvn test`
-3. Prefer **minimal, reversible steps** (avoid a big-bang rewrite).
-4. Keep API compatibility with the existing frontend (`/api/**`) unless explicitly updated.
-5. No unnecessary complexity: start with synchronous HTTP (Gateway + OpenFeign). Messaging (Kafka/RabbitMQ) is optional later.
-6. Database strategy should be conservative at first:
-   - Phase 1/2: allow a shared MySQL instance (+ shared schema)
-   - Phase 3+: evolve toward per-service schemas/databases
+**Important:** When modifying APIs, maintain backward compatibility with the frontend or update `static/js/` accordingly.
 
-### Recommended Target Architecture (phased)
+## AI Features
 
-- Phase 1 (minimum viable microservices):
-  - `gateway` (Spring Cloud Gateway)
-  - `auth-service` (login/register/JWT issuance)
-  - `core-service` (everything else; existing monolith moved here as-is)
+The system integrates Alibaba Qwen (通义千问) via LangChain4j for:
+- **Student AI Advisor**: Personalized learning recommendations based on grades
+- **Teacher AI Assistant**: Teaching analytics and suggestions based on class performance
 
-- Phase 2 (domain split):
-  - `student-service`
-  - `teacher-service`
-  - `admin-service`
-  - `course-service`
-  - `score-service`
-  - `ai-service` (optional)
+**Configuration:**
+- API Key: Set in `application.yml` as `langchain4j.dashscope.chat-model.api-key`
+- Or use environment variable `DASHSCOPE_API_KEY`
+- Model: `qwen-max`
+- AI endpoints are primarily in `core-service` (legacy pattern):
+  - `/api/student/ai/**`
+  - `/api/teacher/ai/**`
 
-### Routing Plan (keep frontend stable)
+## Development Guidelines
 
-To avoid changing the frontend initially:
-- Users access frontend at `http://localhost:8080`
-- Gateway listens on `8080` and serves/forwards:
-  - `/` and `/*.html`, `/css/**`, `/js/**`, `/favicon.ico` → static frontend (either from gateway itself or forwarded to a web/static service)
-  - `/api/auth/**` → `auth-service`
-  - `/api/**` → `core-service` (Phase 1)
+### Adding New Endpoints
 
-In Phase 2, route by domain (still under `/api`):
-- `/api/student/**` → `student-service`
-- `/api/teacher/**` → `teacher-service`
-- `/api/admin/**` → `admin-service`
-- `/api/course/**` → `course-service`
-- `/api/score/**` → `score-service`
-- `/api/ai/**` → `ai-service` (or keep `/api/student/ai/**`, `/api/teacher/ai/**` for backward compatibility)
+1. **Determine the correct service** based on domain (student/teacher/course/score/admin)
+2. **Add controller method** in appropriate service
+3. **Update gateway routes** if using a new path pattern (services/gateway/application.yml)
+4. **Ensure JWT validation** is enabled for protected endpoints
+5. **Test through gateway** at http://localhost:8080
 
-### Security Placement Decision (default recommendation)
+### Shared Code
 
-Phase 1 (lowest risk):
-- Gateway handles CORS and forwarding.
-- Downstream services keep existing Spring Security + JWT validation (reuse current `JwtAuthenticationFilter` + `JwtUtil`).
+- **DTOs, VOs, Entities**: Place in `libs/common`
+- **Security utilities (JwtUtil, etc.)**: Place in `libs/security-common`
+- **Avoid circular dependencies**: Services should not depend on each other's modules, only on libs
 
-Phase 2/3 (optimization):
-- Move JWT validation to gateway (shared secret/public key) + pass user identity as headers.
+### Inter-Service Calls
 
----
+- Use OpenFeign with service names only (no URLs)
+- Handle failures gracefully (consider circuit breakers for production)
+- Prefer eventual consistency over synchronous calls where appropriate
 
-## Claude Code Prompts (Copy/Paste)
+### Database Changes
 
-### Prompt 0 — Repo scan + decomposition proposal (NO big edits yet)
+- Currently all services share `stu_grade_sys` database
+- Each service should only access its domain tables
+- Use MyBatis-Plus mappers in each service
+- Mapper XML files are in `src/main/resources/mapper/` of each service
 
-Paste this to Claude Code:
+## Testing
 
-> 你是一个资深 Java 微服务架构师 + Spring Cloud 工程化专家。请先不要大规模改代码。
->
-> 目标：将当前仓库的单体 Spring Boot 项目重构为微服务（最终可运行），并保持现有原生前端能用。
->
-> 请你做“扫描 + 方案”输出：
-> 1) 扫描 `com.cqu.exp04.controller`、`service`、`mapper`、`entity`、`security`、`resources/static/js/api.js`。
-> 2) 输出领域拆分建议表：student/teacher/admin/course/score/enrollment/user/auth/ai 的边界；每个服务包含哪些 Controller/Service/Mapper；哪些表可能归属哪个服务。
-> 3) 输出 Phase 1 最小可跑拆分：gateway + auth-service + core-service（保留大部分业务在 core-service），并给出路由表（以 `/api` 为前缀）。
-> 4) 给出 Maven 多模块目录结构建议（root pom + services/* + libs/common），并说明 DTO/VO 共享策略。
-> 5) 列出风险点与规避策略：JWT、跨域、静态资源托管、LangChain4j Key（DASHSCOPE_API_KEY）、MyBatis mapper XML。
->
-> 输出必须是 markdown，包含：服务清单与职责、接口路由规划、数据库策略、迁移顺序。
+```bash
+# Run all tests from root
+mvn test
 
-### Prompt 1 — Phase 1 implementation (Maven multi-module + gateway + auth-service)
+# Run tests for specific service
+cd services/student-service && mvn test
 
-Paste this to Claude Code:
+# Integration testing through gateway
+curl -X POST http://localhost:8080/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"2021001","password":"123456"}'
+```
 
-> 开始实施 Phase 1。目标：把当前单体改造成 Maven 多模块，并拆出最小微服务骨架：`gateway` + `auth-service` + `core-service`。
->
-> 约束：
-> - 每一步都要能 `mvn test` 通过再继续。
-> - 保持前端 `static/js/api.js` 的 `BASE_URL='/api'` 可用，用户从 `http://localhost:8080` 打开页面不应崩。
->
-> 具体任务：
-> 1) 把仓库改造成 Maven 多模块：root pom + `services/gateway` + `services/auth-service` + `services/core-service` + `libs/common`（需要时）。
-> 2) `core-service`：承载现有业务（尽量少改代码），包含静态资源（Phase 1 可以由 core-service 提供静态资源）。
-> 3) `auth-service`：迁移认证相关（`/api/auth/login`、`/api/auth/register/*`、JWT 签发）。
-> 4) `gateway`：Spring Cloud Gateway
->    - `/api/auth/**` -> auth-service
->    - `/api/**` -> core-service
->    - 静态资源：优先通过 gateway 转发到 core-service，或直接让 gateway 托管（你自行选择，但必须保证原页面可访问）。
-> 5) 安全策略（Phase 1 默认最稳）：gateway 不做复杂鉴权；core-service 保留现有 JWT 校验。
-> 6) 为三个服务分别提供 `application.yml/yaml`，端口建议：gateway 8080、auth 8081、core 8082；数据库连接先共享 `stu_grade_sys`。
-> 7) 运行验证：
->    - 给出启动顺序
->    - 通过网关调用 `/api/auth/login` 能返回 token
->    - 访问 `/index.html` 能加载页面
->
-> 完成后输出：目录结构、如何启动、验证结果。
+## Common Issues
 
-### Prompt 2 — Phase 2 implementation (domain split)
+### Service Not Registering with Nacos
 
-Paste this to Claude Code:
+**Check:**
+1. Nacos is running: `curl http://localhost:8848/nacos/actuator/health`
+2. Service configuration has correct `spring.cloud.nacos.discovery.server-addr`
+3. Service logs for Nacos connection errors
+4. Nacos console shows the service
 
-> 开始 Phase 2：把 `core-service` 按领域拆分为多个业务服务，并保持前端调用不崩。
->
-> 推荐拆分（可调整但要解释）：student-service、teacher-service、admin-service、course-service、score-service、ai-service（可选）。
->
-> 要求：
-> 1) 网关路由清晰：`/api/student/**`、`/api/teacher/**`、`/api/admin/**`、`/api/course/**`、`/api/score/**`、`/api/ai/**`。
-> 2) DTO/VO/Result 等共享类型放到 `libs/common`，避免循环依赖。
-> 3) 服务间调用优先 OpenFeign（如确有需要）；否则只通过网关聚合也可以。
-> 4) 数据库阶段仍共享一个 MySQL，但 mapper/表归属要在代码层清晰；如遇强耦合表，列出后续拆库方案。
-> 5) JWT 校验统一策略：要么继续各服务校验，要么 gateway 统一校验（说明取舍）。
-> 6) 每拆出一个服务都必须：编译、测试、最小接口验证通过，再继续拆下一个。
->
-> 最终输出：启动方式、接口路由表、迁移清单。
+### Gateway 503 Errors
 
-### Prompt 3 — Phase 3 (optional hardening)
+**Check:**
+1. Target service is running and registered in Nacos
+2. Gateway routes are configured correctly (see services/gateway/application.yml)
+3. Gateway has `spring-cloud-starter-loadbalancer` dependency
+4. Route URIs use `lb://` prefix
 
-Paste this to Claude Code:
+### JWT Validation Failures
 
-> Phase 3（可选增强）：在不破坏功能前提下补齐工程化能力。
-> 可选项按优先级逐步引入：
-> 1) OpenFeign + LoadBalancer（如尚未完成）
-> 2) 统一配置管理（先集中式配置也可，说明理由）
-> 3) 可观测性：Micrometer + traceId 日志
-> 4) Resilience4j：对 AI 调用等外部依赖加熔断/限流
-> 5) 事件驱动（仅当确有必要）：Kafka/RabbitMQ
->
-> 输出：新增依赖与配置、如何验证、复杂度影响说明。
+**Check:**
+1. All services use the **same** JWT secret in `application.yml`
+2. Token is included in `Authorization: Bearer <token>` header
+3. Token has not expired (default 24 hours)
+4. Service has security-common dependency
 
----
+### PasswordEncoder Bean Not Found (auth-service)
 
-## Notes (AI / Secrets)
+**Symptom:** `UnsatisfiedDependencyException: No qualifying bean of type 'PasswordEncoder'`
 
-- `application.yaml` currently contains a default DashScope API key value in `${DASHSCOPE_API_KEY:...}`. Prefer using environment variables in real deployments.
-- JWT secret is configured in `application.yaml` (`jwt.secret`). When splitting services, ensure all services that validate tokens share the same secret (Phase 1/2), or switch to asymmetric signing (Phase 3+).
+**Root Cause:** auth-service needs PasswordEncoder but should not use the full SecurityConfig from security-common (which includes JWT filter).
 
-## Known Issues & TODOs
+**Solution:**
+1. auth-service has its own `SecurityConfig` that only provides `PasswordEncoder` bean
+2. auth-service's `@ComponentScan` excludes `com.cqu.security.SecurityConfig` using `excludeFilters`
+3. See `services/auth-service/src/main/java/com/cqu/auth/AuthApplication.java` and `config/SecurityConfig.java`
 
-1. Some mapper methods may be declared in Java interfaces but not implemented in XML.
-2. AI requests are stateless (no conversation memory).
-3. Performance hardening and observability are not implemented yet.
-4. Architecture is currently monolithic; see Microservices Refactor Playbook above.
+### Conflicting Bean Definitions (SecurityConfig or JwtAuthenticationFilter)
+
+**Symptom:** `ConflictingBeanDefinitionException: bean name 'securityConfig' or 'jwtAuthenticationFilter' conflicts`
+
+**Root Cause:** Multiple services define the same bean (from both security-common and their own config package).
+
+**Solutions:**
+- **auth-service**: Should exclude security-common's `SecurityConfig` (it doesn't need JWT validation, only PasswordEncoder)
+- **core-service**: Should exclude security-common's `SecurityConfig` (has its own with custom static resource rules)
+- **Other services**: Can remove their local security files and use security-common's shared config
+
+**Files to check:**
+- `/services/*/src/main/java/com/cqu/*/security/` - Remove duplicate JWT classes if present
+- `/services/*/src/main/java/com/cqu/*/*Application.java` - Add excludeFilters if needed
+
+**Example fix (in XxxApplication.java):**
+```java
+@ComponentScan(
+    basePackages = {"com.cqu.xxx", "com.cqu.security", "com.cqu.common"},
+    excludeFilters = @ComponentScan.Filter(
+        type = FilterType.ASSIGNABLE_TYPE,
+        classes = SecurityConfig.class
+    )
+)
+```
+
+### Feign Client Failures
+
+**Check:**
+1. Target service name matches Nacos registration name exactly
+2. `@FeignClient` annotation has no `url` parameter (should use service discovery)
+3. Target service endpoint path is correct
+4. Services can communicate (network/firewall not blocking)
+
+## Important Files
+
+- `pom.xml` - Root POM with dependency management
+- `libs/common/` - Shared DTOs, VOs, entities, exception handler
+- `libs/security-common/` - JWT utilities, security configs
+- `services/gateway/src/main/resources/application.yml` - Gateway routes
+- `services/*/src/main/resources/application.yml` - Each service's config (port, Nacos, DB)
+- `services/core-service/src/main/resources/static/` - Frontend files
+- `NACOS-GUIDE.md` - Detailed Nacos setup and troubleshooting
+- `README.md` - User-facing documentation in Chinese
+
+## Notes
+
+- This project was refactored from a monolith to microservices architecture
+- Nacos service discovery enables dynamic service registration and load balancing
+- Each service validates JWT independently using shared security-common library
+- AI features require valid DashScope API key
+- No Redis dependency (purely JWT-based stateless authentication)
+- Frontend uses vanilla JavaScript (no framework)

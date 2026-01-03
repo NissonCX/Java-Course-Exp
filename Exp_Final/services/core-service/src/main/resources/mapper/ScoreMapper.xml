@@ -86,7 +86,7 @@
         ORDER BY s.total_score DESC
     </select>
 
-    <select id="findStudentScoreDetails" resultType="com.cqu.exp04.vo.StudentScoreVO">
+    <select id="findStudentScoreDetails" resultType="com.cqu.core.vo.StudentScoreVO">
         SELECT
             s.id as scoreId,
             c.course_no as courseNo,

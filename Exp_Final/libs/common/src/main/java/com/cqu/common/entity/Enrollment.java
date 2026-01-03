@@ -1,5 +1,6 @@
 package com.cqu.common.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,7 +23,10 @@ public class Enrollment extends BaseEntity {
     private LocalDateTime enrollTime;
     private Integer status; // 1-正常, 0-退课
 
-    // 关联对象
+    // 关联对象（不对应数据库字段）
+    @TableField(exist = false)
     private Student student;
+
+    @TableField(exist = false)
     private TeachingClass teachingClass;
 }

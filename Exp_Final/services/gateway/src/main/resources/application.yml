@@ -43,6 +43,22 @@ spring:
           filters:
             - StripPrefix=0
 
+        # 学生 AI（由 core-service 提供，需优先于 student-service）
+        - id: core-student-ai
+          uri: lb://core-service
+          predicates:
+            - Path=/api/student/ai/**
+          filters:
+            - StripPrefix=0
+
+        # 教师 AI（由 core-service 提供，需优先于 teacher-service）
+        - id: core-teacher-ai
+          uri: lb://core-service
+          predicates:
+            - Path=/api/teacher/ai/**
+          filters:
+            - StripPrefix=0
+
         # 学生服务路由
         - id: student-service
           uri: lb://student-service

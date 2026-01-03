@@ -7,7 +7,7 @@ import com.cqu.common.entity.User;
 import com.cqu.core.mapper.StudentMapper;
 import com.cqu.core.mapper.TeacherMapper;
 import com.cqu.core.mapper.UserMapper;
-import com.cqu.core.security.JwtUtil;
+import com.cqu.security.JwtUtil;
 import com.cqu.core.service.AuthService;
 import com.cqu.common.vo.LoginResponse;
 import org.springframework.beans.factory.annotation.Autowired;

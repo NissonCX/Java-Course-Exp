@@ -1,5 +1,6 @@
 package com.cqu.common.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -45,7 +46,7 @@ public class TeachingClass extends BaseEntity {
      * - 2：已开课（不可选课）
      * - 0：已结课（不可选课）
      *
-     * 兼容历史数据：若为 null，按“未开课”处理。
+     * 兼容历史数据：若为 null，按"未开课"处理。
      */
     private Integer status;
 
@@ -63,7 +64,10 @@ public class TeachingClass extends BaseEntity {
         };
     }
 
-    // 关联对象
+    // 关联对象（不对应数据库字段）
+    @TableField(exist = false)
     private Course course;
+
+    @TableField(exist = false)
     private Teacher teacher;
 }

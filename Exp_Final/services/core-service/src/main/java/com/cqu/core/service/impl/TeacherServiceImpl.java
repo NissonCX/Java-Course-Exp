@@ -11,7 +11,7 @@ import com.cqu.core.mapper.ScoreMapper;
 import com.cqu.core.mapper.TeacherMapper;
 import com.cqu.core.mapper.TeachingClassMapper;
 import com.cqu.core.mapper.UserMapper;
-import com.cqu.core.security.JwtUtil;
+import com.cqu.security.JwtUtil;
 import com.cqu.core.service.AIService;
 import com.cqu.core.service.ScoreService;
 import com.cqu.core.service.TeacherService;

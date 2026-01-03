@@ -4,7 +4,7 @@ import com.cqu.common.dto.AIConsultRequest;
 import com.cqu.common.entity.Student;
 import com.cqu.common.entity.User;
 import com.cqu.core.mapper.UserMapper;
-import com.cqu.core.security.JwtUtil;
+import com.cqu.security.JwtUtil;
 import com.cqu.core.service.AIService;
 import com.cqu.core.service.StudentService;
 import com.cqu.common.vo.Result;

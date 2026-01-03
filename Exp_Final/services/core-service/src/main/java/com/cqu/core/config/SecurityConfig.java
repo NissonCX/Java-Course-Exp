@@ -1,6 +1,6 @@
 package com.cqu.core.config;
 
-import com.cqu.core.security.JwtAuthenticationFilter;
+import com.cqu.security.JwtAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

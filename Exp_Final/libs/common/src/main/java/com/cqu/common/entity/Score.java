@@ -1,5 +1,6 @@
 package com.cqu.common.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -33,7 +34,10 @@ public class Score extends BaseEntity {
     private LocalDateTime finalScoreTime;
     private LocalDateTime totalScoreTime;
 
-    // 关联对象
+    // 关联对象（不对应数据库字段）
+    @TableField(exist = false)
     private Student student;
+
+    @TableField(exist = false)
     private TeachingClass teachingClass;
 }
