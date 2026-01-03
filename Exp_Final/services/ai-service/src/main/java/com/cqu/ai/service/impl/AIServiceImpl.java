@@ -8,6 +8,7 @@ import dev.langchain4j.model.dashscope.QwenChatModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -23,6 +24,9 @@ public class AIServiceImpl implements AIService {
 
     private static final Logger logger = LoggerFactory.getLogger(AIServiceImpl.class);
 
+    @Value("${langchain4j.dashscope.api-key:}")
+    private String apiKey;
+
     @Autowired
     private QwenChatModel qwenChatModel;
 
@@ -35,6 +39,10 @@ public class AIServiceImpl implements AIService {
     @Override
     public String studentConsult(Long studentId, String question) {
         logger.info("Student {} asking question: {}", studentId, question);
+
+        if (isApiKeyInvalid()) {
+            return getMockResponse(question);
+        }
 
         try {
             // 获取学生信息和成绩数据用于智能分析
@@ -58,6 +66,10 @@ public class AIServiceImpl implements AIService {
     public String teacherConsult(Long teacherId, String question) {
         logger.info("Teacher {} asking question: {}", teacherId, question);
 
+        if (isApiKeyInvalid()) {
+            return getMockResponse(question);
+        }
+
         try {
             // 构建教师专用的提示词
             String prompt = buildTeacherPrompt(question);
@@ -76,6 +88,10 @@ public class AIServiceImpl implements AIService {
     @Override
     public String generalConsult(String question) {
         logger.info("General consultation question: {}", question);
+
+        if (isApiKeyInvalid()) {
+            return getMockResponse(question);
+        }
 
         try {
             // 构建通用的提示词
@@ -180,4 +196,19 @@ public class AIServiceImpl implements AIService {
         }
         return null;
     }
+
+    private boolean isApiKeyInvalid() {
+        return apiKey == null || apiKey.isEmpty() || "sk-123456".equals(apiKey) || apiKey.startsWith("${");
+    }
+
+    private String getMockResponse(String question) {
+        return "【演示模式】由于未配置有效的AI API Key，系统返回模拟回复：\n\n" +
+               "针对您的问题：“" + question + "”\n\n" +
+               "这是一个模拟的智能回答。在实际部署中，配置正确的DashScope API Key后，这里将显示来自通义千问大模型的实时分析结果。\n\n" +
+               "建议您：\n" +
+               "1. 检查application.yml中的API Key配置\n" +
+               "2. 确保网络连接正常\n" +
+               "3. 查看后端日志获取详细错误信息";
+    }
 }
+

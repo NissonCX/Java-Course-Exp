@@ -51,4 +51,16 @@ public interface ScoreServiceClient {
     Result<List<Object>> getClassScores(@PathVariable("classId") Long classId,
                                        @RequestParam(required = false) Long teacherId,
                                        @RequestHeader("Authorization") String authorization);
+
+    /**
+     * 查询教学班学生成绩列表（包含学生信息）
+     * @param classId 教学班ID
+     * @param teacherId 教师ID
+     * @param authorization JWT token
+     * @return 学生成绩列表
+     */
+    @GetMapping("/api/score/class/{classId}/students")
+    Result<List<Map<String, Object>>> getClassStudentsWithScores(@PathVariable("classId") Long classId,
+                                                                 @RequestParam(required = false) Long teacherId,
+                                                                 @RequestHeader("Authorization") String authorization);
 }

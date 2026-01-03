@@ -23,6 +23,12 @@ public interface ScoreService {
     List<Score> getClassScores(Long classId, Long teacherId);
 
     /**
+     * 获取班级学生成绩列表（包含学生信息）
+     * 用于教师端成绩管理页面
+     */
+    List<Map<String, Object>> getClassStudentsWithScores(Long classId, Long teacherId);
+
+    /**
      * 录入/更新学生成绩
      */
     void inputScore(Long teacherId, ScoreInputRequest request);

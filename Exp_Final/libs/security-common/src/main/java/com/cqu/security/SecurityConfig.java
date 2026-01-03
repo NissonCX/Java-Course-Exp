@@ -1,6 +1,5 @@
 package com.cqu.security;
 
-import com.cqu.security.JwtAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,12 +30,16 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()  // 登录和注册接口无需认证
+                        .requestMatchers("/api/auth/**").permitAll()  // 登录、注册和用户信息接口无需认证
                         .requestMatchers("/api/course/**").permitAll()  // 课程查询接口无需认证
+                        .requestMatchers("/api/score/**").permitAll()   // 成绩服务接口（内部调用）
                         // 放行静态资源
-                    .requestMatchers("/", "/index.html", "/register.html", "/student.html", "/teacher.html", "/admin.html", "/test-login.html", "/css/**", "/js/**", "/favicon.ico", "/error").permitAll()
+                        .requestMatchers("/", "/index.html", "/register.html", "/student.html", "/teacher.html", "/admin.html", "/test-login.html", "/css/**", "/js/**", "/favicon.ico", "/error").permitAll()
                         // 放行SSE流式端点（避免异步分发时的SecurityContext问题，在Controller中已手动验证JWT）
                         .requestMatchers("/api/student/ai/consult/stream", "/api/teacher/ai/consult/stream").permitAll()
+                        // 放行服务间调用的内部接口（通过路径参数获取单个实体信息）
+                        .requestMatchers("/api/student/{studentId}").permitAll()
+                        .requestMatchers("/api/teacher/{teacherId}").permitAll()
                         .requestMatchers("/api/student/**").hasRole("STUDENT")
                         .requestMatchers("/api/teacher/**").hasRole("TEACHER")
                         .requestMatchers("/api/admin/**").hasAnyRole("ADMIN", "SUPER_ADMIN")

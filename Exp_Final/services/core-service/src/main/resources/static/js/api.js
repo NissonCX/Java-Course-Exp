@@ -1,5 +1,5 @@
 /**
- * API Client Wrapper
+ * API Client Wrapper for Microservices Architecture
  * Handles JWT authentication and request formatting
  */
 
@@ -67,7 +67,6 @@ const API = {
 
             // Handle 401 Unauthorized
             if (response.status === 401) {
-                // If not already on login page
                 if (!window.location.pathname.endsWith('index.html') &&
                     !window.location.pathname.endsWith('/')) {
                     API.logout();
@@ -83,7 +82,7 @@ const API = {
         }
     },
 
-    // --- Auth Methods ---
+    // ==================== AUTH SERVICE ====================
     login: (username, password) => {
         return API.request('/auth/login', {
             method: 'POST',
@@ -103,17 +102,13 @@ const API = {
         });
     },
 
-    // --- Student Methods ---
+    // ==================== STUDENT SERVICE ====================
     getStudentProfile: () => API.request('/student/profile'),
     updateStudentProfile: (data) => {
         return API.request('/student/profile', {
             method: 'PUT',
             body: JSON.stringify(data)
         });
-    },
-    getAvailableClasses: (semester) => {
-        const query = semester ? `?semester=${semester}` : '';
-        return API.request(`/course/classes${query}`);
     },
     getStudentScores: () => API.request('/student/scores'),
     getStudentEnrollments: () => API.request('/student/enrollments'),
@@ -128,14 +123,8 @@ const API = {
             method: 'DELETE'
         });
     },
-    studentAiConsult: (message) => {
-        return API.request('/student/ai/consult', {
-            method: 'POST',
-            body: JSON.stringify({ message })
-        });
-    },
 
-    // --- Teacher Methods ---
+    // ==================== TEACHER SERVICE ====================
     getTeacherProfile: () => API.request('/teacher/profile'),
     updateTeacherProfile: (data) => {
         return API.request('/teacher/profile', {
@@ -145,35 +134,52 @@ const API = {
     },
     getTeacherClasses: () => API.request('/teacher/classes'),
     getClassStudents: (classId) => API.request(`/teacher/class/${classId}/students`),
-    getClassScores: (classId) => API.request(`/teacher/class/${classId}/scores`),
-    getClassStatistics: (classId) => API.request(`/teacher/class/${classId}/statistics`),
-    inputScore: (data) => {
-        return API.request('/teacher/score/input', {
+
+    // ==================== COURSE SERVICE ====================
+    getAvailableClasses: (semester) => {
+        const query = semester ? `?semester=${encodeURIComponent(semester)}` : '';
+        return API.request(`/course/classes${query}`);
+    },
+
+    // ==================== SCORE SERVICE ====================
+    getClassStatistics: (classId, teacherId = null) => {
+        const user = API.getUser();
+        const tid = teacherId || (user ? user.roleId : null);
+        const query = tid ? `?teacherId=${tid}` : '';
+        return API.request(`/score/class/${classId}/statistics${query}`);
+    },
+    inputScore: (data, teacherId = null) => {
+        const user = API.getUser();
+        const tid = teacherId || (user ? user.roleId : null);
+        return API.request(`/score/input?teacherId=${tid}`, {
             method: 'POST',
             body: JSON.stringify(data)
         });
     },
-    batchInputScores: (teachingClassId, scores) => {
-        return API.request('/teacher/score/batch', {
+    batchInputScores: (teachingClassId, scores, teacherId = null) => {
+        const user = API.getUser();
+        const tid = teacherId || (user ? user.roleId : null);
+        return API.request(`/score/batch?teacherId=${tid}`, {
             method: 'POST',
             body: JSON.stringify({ teachingClassId, scores })
         });
     },
-    teacherAiConsult: (teachingClassId, message) => {
-        return API.request('/teacher/ai/consult', {
+
+    // ==================== AI SERVICE ====================
+    studentAiConsult: (message) => {
+        return API.request('/ai/student/consult', {
             method: 'POST',
-            body: JSON.stringify({ teachingClassId, message })
+            body: JSON.stringify({ message })
+        });
+    },
+    teacherAiConsult: (message) => {
+        return API.request('/ai/teacher/consult', {
+            method: 'POST',
+            body: JSON.stringify({ message })
         });
     },
 
-    updateTeachingClassStatus: (classId, status) => {
-        return API.request(`/teacher/class/${classId}/status`, {
-            method: 'PUT',
-            body: JSON.stringify({ status })
-        });
-    },
-
-    // --- Admin Methods (SUPER_ADMIN) ---
+    // ==================== ADMIN SERVICE ====================
     adminCreateStudent: (data) => {
         return API.request('/admin/students', {
             method: 'POST',
@@ -198,12 +204,16 @@ const API = {
             body: JSON.stringify(data)
         });
     },
+    adminListCourses: () => API.request('/admin/courses'),
+    adminListTeachers: () => API.request('/admin/teachers'),
+    adminListStudents: () => API.request('/admin/students'),
+    adminListTeachingClasses: () => API.request('/admin/teaching-classes'),
 
-    adminListCourses: () => {
-        return API.request('/admin/courses');
-    },
-
-    adminListTeachers: () => {
-        return API.request('/admin/teachers');
+    // ==================== LEGACY COMPATIBILITY ====================
+    updateTeachingClassStatus: (classId, status) => {
+        return API.request(`/teacher/class/${classId}/status`, {
+            method: 'PUT',
+            body: JSON.stringify({ status })
+        });
     }
 };

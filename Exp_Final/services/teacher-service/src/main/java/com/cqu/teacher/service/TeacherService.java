@@ -36,6 +36,11 @@ public interface TeacherService {
     List<Map<String, Object>> getClassStudents(Long teacherId, Long classId);
 
     /**
+     * 更新教学班状态
+     */
+    void updateClassStatus(Long teacherId, Long classId, Integer status);
+
+    /**
      * 根据ID查询教师
      */
     Teacher getById(Long teacherId);

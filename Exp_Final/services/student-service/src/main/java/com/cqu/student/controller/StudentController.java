@@ -28,24 +28,7 @@ public class StudentController {
     public Result<Map<String, Object>> getProfile(HttpServletRequest request) {
         try {
             Long studentId = (Long) request.getAttribute("roleId");
-            Student student = studentService.getById(studentId);
-
-            // 简化版：暂不获取用户信息（需要调用 auth-service）
-            Map<String, Object> profile = new HashMap<>();
-            profile.put("id", student.getId());
-            profile.put("studentNo", student.getStudentNo());
-            profile.put("userId", student.getUserId());
-            profile.put("name", student.getName());
-            profile.put("gender", student.getGender());
-            profile.put("birthDate", student.getBirthDate());
-            profile.put("major", student.getMajor());
-            profile.put("className", student.getClassName());
-            profile.put("grade", student.getGrade());
-            profile.put("enrollmentYear", student.getEnrollmentYear());
-            profile.put("createTime", student.getCreateTime());
-            profile.put("updateTime", student.getUpdateTime());
-            profile.put("_note", "邮箱和电话需要通过 auth-service 获取");
-
+            Map<String, Object> profile = ((com.cqu.student.service.impl.StudentServiceImpl) studentService).getProfileWithUserInfo(studentId);
             return Result.success(profile);
         } catch (Exception e) {
             return Result.error(e.getMessage());
@@ -138,5 +121,31 @@ public class StudentController {
     public Result<String> aiConsult(@RequestBody Map<String, String> params,
                                      HttpServletRequest httpRequest) {
         return Result.error("AI 咨询功能请访问 /api/ai/consult");
+    }
+
+    /**
+     * 根据学生ID获取学生信息（供其他服务调用）
+     */
+    @GetMapping("/{studentId}")
+    public Result<Map<String, Object>> getStudentById(@PathVariable Long studentId) {
+        try {
+            Student student = studentService.getById(studentId);
+            if (student == null) {
+                return Result.error("学生不存在");
+            }
+
+            Map<String, Object> result = new HashMap<>();
+            result.put("id", student.getId());
+            result.put("studentNo", student.getStudentNo());
+            result.put("name", student.getName());
+            result.put("gender", student.getGender());
+            result.put("major", student.getMajor());
+            result.put("className", student.getClassName());
+            result.put("grade", student.getGrade());
+
+            return Result.success(result);
+        } catch (Exception e) {
+            return Result.error(e.getMessage());
+        }
     }
 }

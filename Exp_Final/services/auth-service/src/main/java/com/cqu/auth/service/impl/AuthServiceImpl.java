@@ -14,6 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * 认证服务实现类
  */
@@ -74,5 +77,41 @@ public class AuthServiceImpl implements AuthService {
                 .userId(user.getId())
                 .roleId(roleId)
                 .build();
+    }
+
+    @Override
+    public Map<String, Object> getUserById(Long userId) {
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new RuntimeException("用户不存在");
+        }
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("id", user.getId());
+        result.put("username", user.getUsername());
+        result.put("realName", user.getRealName());
+        result.put("email", user.getEmail());
+        result.put("phone", user.getPhone());
+        result.put("role", user.getRole().name());
+        result.put("status", user.getStatus());
+
+        return result;
+    }
+
+    @Override
+    public void updateUserInfo(Long userId, String email, String phone) {
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new RuntimeException("用户不存在");
+        }
+
+        if (email != null) {
+            user.setEmail(email);
+        }
+        if (phone != null) {
+            user.setPhone(phone);
+        }
+
+        userMapper.updateById(user);
     }
 }

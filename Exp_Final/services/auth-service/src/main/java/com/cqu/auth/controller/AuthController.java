@@ -12,6 +12,8 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 /**
  * 认证控制器
  */
@@ -65,6 +67,34 @@ public class AuthController {
             return Result.success("注册成功", response);
         } catch (Exception e) {
             return Result.error("注册失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 根据用户ID获取用户信息（供其他服务调用）
+     */
+    @GetMapping("/user/{userId}")
+    public Result<Map<String, Object>> getUserById(@PathVariable Long userId) {
+        try {
+            Map<String, Object> userInfo = authService.getUserById(userId);
+            return Result.success(userInfo);
+        } catch (Exception e) {
+            return Result.error(e.getMessage());
+        }
+    }
+
+    /**
+     * 更新用户信息（邮箱、电话）
+     */
+    @PutMapping("/user/{userId}")
+    public Result<String> updateUser(@PathVariable Long userId, @RequestBody Map<String, String> params) {
+        try {
+            String email = params.get("email");
+            String phone = params.get("phone");
+            authService.updateUserInfo(userId, email, phone);
+            return Result.success("更新成功");
+        } catch (Exception e) {
+            return Result.error("更新失败: " + e.getMessage());
         }
     }
 

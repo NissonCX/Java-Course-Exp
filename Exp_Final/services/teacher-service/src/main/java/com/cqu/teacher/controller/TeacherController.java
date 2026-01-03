@@ -26,11 +26,11 @@ public class TeacherController {
      * 获取教师个人信息
      */
     @GetMapping("/profile")
-    public Result<Teacher> getProfile(HttpServletRequest request) {
+    public Result<Map<String, Object>> getProfile(HttpServletRequest request) {
         try {
             Long teacherId = (Long) request.getAttribute("roleId");
-            Teacher teacher = teacherService.getProfile(teacherId);
-            return Result.success(teacher);
+            Map<String, Object> profile = ((com.cqu.teacher.service.impl.TeacherServiceImpl) teacherService).getProfileWithUserInfo(teacherId);
+            return Result.success(profile);
         } catch (Exception e) {
             return Result.error(e.getMessage());
         }
@@ -40,12 +40,13 @@ public class TeacherController {
      * 更新教师个人信息
      */
     @PutMapping("/profile")
-    public Result<String> updateProfile(@RequestBody Teacher teacher,
+    public Result<String> updateProfile(@RequestBody Map<String, String> params,
                                        HttpServletRequest request) {
         try {
             Long teacherId = (Long) request.getAttribute("roleId");
-            teacher.setId(teacherId);
-            teacherService.updateProfile(teacher);
+            String email = params.get("email");
+            String phone = params.get("phone");
+            ((com.cqu.teacher.service.impl.TeacherServiceImpl) teacherService).updateProfileWithUserInfo(teacherId, email, phone);
             return Result.success("更新成功");
         } catch (Exception e) {
             return Result.error("更新失败: " + e.getMessage());
@@ -93,6 +94,23 @@ public class TeacherController {
             return Result.success(students);
         } catch (Exception e) {
             return Result.error(e.getMessage());
+        }
+    }
+
+    /**
+     * 更新教学班状态
+     */
+    @PutMapping("/class/{classId}/status")
+    public Result<String> updateClassStatus(@PathVariable Long classId,
+                                           @RequestBody Map<String, Object> params,
+                                           HttpServletRequest request) {
+        try {
+            Long teacherId = (Long) request.getAttribute("roleId");
+            Integer status = Integer.valueOf(params.get("status").toString());
+            teacherService.updateClassStatus(teacherId, classId, status);
+            return Result.success("状态更新成功");
+        } catch (Exception e) {
+            return Result.error("状态更新失败: " + e.getMessage());
         }
     }
 
